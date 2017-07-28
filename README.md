@@ -49,7 +49,8 @@ Our example would look like this:
 
 
 
-![Alt text](/blob/master/exHierarchy.JPG?raw=true)
+![Alt text](exHierarchy.JPG?raw=true)
+
 
 
 
