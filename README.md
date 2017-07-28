@@ -10,7 +10,9 @@ It was my intention to make some of the code look similar to certain sections in
 
 # Downloading
 1.	 pip install htsprophet
+
 The following should help you understand how I built it and how it works
+
 # Part I: The Data
 •	I originally used Redfin traffic data to build this package
 
