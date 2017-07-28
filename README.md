@@ -1,33 +1,38 @@
 # htsprophet
 Hierarchical Time Series Forecasting using Prophet
 
-Credit to Rob J. Hyndman and research partners as much of the code was developed with the help of their work
+Credit to Rob J. Hyndman and research partners as much of the code was developed with the help of their work.
 
 https://www.otexts.org/fpp
 
 https://robjhyndman.com/publications/
 
-Credit to Facebook and their fbprophet package
+Credit to Facebook and their fbprophet package.
 
 https://facebookincubator.github.io/prophet/
 
-It was my intention to make some of the code look similar to certain sections in the Prophet and (Hyndman's) hts packages
+It was my intention to make some of the code look similar to certain sections in the Prophet and (Hyndman's) hts packages.
 
 # Downloading
-1.	 pip install htsprophet
 
-The following should help you understand how I built it and how it works
+1. pip install htsprophet
+
+If you'd like to just skip to coding with the package, runHTS.py should help you with that, but if you like reading the following should help you understand how I built htsprophet and how it works.
 
 # Part I: The Data
 
-I originally used Redfin traffic data to build this package
+I originally used Redfin traffic data to build this package.
 
-I pulled the data so that date was in the first column, my layers were the middle columns, and the number I wanted to forecast was in the last column
+I pulled the data so that date was in the first column, my layers were the middle columns, and the number I wanted to forecast was in the last column.
 
-I made a function called makeWeekly (Assumes you have max 4 categorical columns), that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me
+I made a function called makeWeekly (Assumes you have max 4 categorical columns), that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me.
 
 So the data looked like this:
 
+|    Date   |   Platform    |
+| ----------| ------------- |
+| 1100 B.C. | Stone Tablet  |
+|   ...     |   Car Phone   |
 Date	Platform	Medium	Business_Market	Sessions
 1100 B.C.	Stone Tablet	Land	Tokyo	23234
 …	Car Phone	Air	Hamburg	2342
@@ -38,7 +43,7 @@ Date	Platform	Medium	Business_Market	Sessions
         
 I then ran my orderHier() function with just this dataframe as its input.  NOTE: you cannot run this function if you have more than 4 columns in the middle (in between Date and Sessions for ex.)
 
-To run this function, you specify the data, and how you want your middle columns to be ordered.  So orderHier(data, 2, 1, 3) means you want the second column after date to be the first level of the hierarchy
+To run this function, you specify the data, and how you want your middle columns to be ordered.  So orderHier(data, 2, 1, 3) means you want the second column after date to be the first level of the hierarchy.
 
 Our example would look like this:
 
@@ -62,17 +67,17 @@ Date	Total	Land	Air	Sea	Land_Stone tablet	Land_Car Phone	Air_Stone Tablet
 
 
 Because of the way orderHier was written, if you have more than 4 categorical columns, then you must get the data in this format on your own while also producing the list of lists called nodes
-Nodes – describes the structure of the hierarchy 
+Nodes – describes the structure of the hierarchy.
 
 Here it would equal [[3],[2,2,2],[4,4,4,4,4,4]]
 
-There are 3 nodes in the first level: Land, Air, Sea
+There are 3 nodes in the first level: Land, Air, Sea.
 
-There are 2 children for each of those nodes: Stone tablet, Car phone
+There are 2 children for each of those nodes: Stone tablet, Car phone.
 
 There are 4 business markets for each of those nodes: Tokyo, Hamburg etc.
 
-If you use the orderHier function, nodes will be the second output of the function
+If you use the orderHier function, nodes will be the second output of the function.
 
 # Part II: Prophet inputs
 
@@ -137,12 +142,12 @@ The following is the description of inputs and outputs for hts as well as the sp
      ynew - a dictionary of DataFrames with predictions, seasonalities and trends that can all be plotted
      
 
-Don’t forget to specify the frequency if you’re not using Daily data
+Don’t forget to specify the frequency if you’re not using Daily data.
 
-All other functions should be self-explanatory
+All other functions should be self-explanatory.
 
 # Part III: Room For improvement
 
 The package could benefit from the following two things:
-1. A way to run some of it in parallel, cause it take a while sometimes
-2. Prediction intervals would be cool as well
+1. A way to run some of it in parallel, cause it take a while sometimes.
+2. Prediction intervals would be cool as well.
