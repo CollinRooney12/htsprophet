@@ -49,24 +49,23 @@ Our example would look like this:
 
 
 
+![alt text](https://raw.githubusercontent.com/CollinRooney12/htsprophet/exHierarchy.jpg)
 
 
 
 
-
-
-Date	Total	Land	Air	Sea	Land_Stone tablet	Land_Car Phone	Air_Stone Tablet
-1100 B.C.	24578	23135	555	888	23000	135	550
-1099 B.C.	86753	86654	44	55	2342	84312	22
-							
-							
-							
-							
+|   Date   |   Total   |   Land   |   Air   |   Sea   |   Land_Stone tablet   |   Land_Car Phone   |   Air_Stone tablet   |
+|----------|-----------|----------|---------|---------|-----------------------|--------------------|----------------------|
+| 1100 B.C.|   24578   |   23135  |  555    |  888    |		23000	      |		135        |		550	  |
+| 1099 B.C.|   86753   |   86654  |  44     |	55    |		2342	      |	       84312       |		22	  |
+|    ...   |    ...    |   ...    |   ...   |  ...    |		... 	      |         ...        |		...	  |
 
 	*All numbers represent the number of sessions for each node in the Hierarchy
 
 
-Because of the way orderHier was written, if you have more than 4 categorical columns, then you must get the data in this format on your own while also producing the list of lists called nodes
+If you have more than 4 categorical columns, then you must get the data in this format on your own while also producing the list of lists called nodes
+
+
 Nodes – describes the structure of the hierarchy.
 
 Here it would equal [[3],[2,2,2],[4,4,4,4,4,4]]
@@ -146,7 +145,7 @@ The following is the description of inputs and outputs for hts as well as the sp
      ynew - a dictionary of DataFrames with predictions, seasonalities and trends that can all be plotted
      
 
-Don’t forget to specify the frequency if you’re not using Daily data.
+Don’t forget to specify the frequency if you’re not using daily data.
 
 All other functions should be self-explanatory.
 
