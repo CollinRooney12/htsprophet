@@ -49,7 +49,7 @@ Our example would look like this:
 
 
 
-!![Screenshot](exHierarchy.jpg)
+![Alt text](/blob/master/exHierarchy.JPG?raw=true)
 
 
 
