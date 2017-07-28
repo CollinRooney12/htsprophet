@@ -4,6 +4,7 @@ Hierarchical Time Series Forecasting using Prophet
 Credit to Rob J. Hyndman and research partners as much of the code was developed with the help of their work
 
 https://www.otexts.org/fpp
+
 https://robjhyndman.com/publications/
 
 Credit to Facebook and their fbprophet package
@@ -78,6 +79,7 @@ If you use the orderHier function, nodes will be the second output of the functi
 Anything that you would specify in Prophet you can specify in hts(). It’s also flexible and will allow you to input a dataframe of values for inputs like cap, capF, and changepoints.  All of these inputs are specified when you call hts, and after that you just let it run.
 
 The following is the description of inputs and outputs for hts as well as the specified defaults:
+
     Parameters
     ----------------
      y - dataframe of time-series data
@@ -133,8 +135,10 @@ The following is the description of inputs and outputs for hts as well as the sp
     Returns
     -----------------
      ynew - a dictionary of DataFrames with predictions, seasonalities and trends that can all be plotted
+     
 
 Don’t forget to specify the frequency if you’re not using Daily data
+
 All other functions should be self-explanatory
 
 # Part III: Room For improvement
