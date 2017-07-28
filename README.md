@@ -49,8 +49,7 @@ Our example would look like this:
 
 
 
-![alt text](https://raw.githubusercontent.com/CollinRooney12/htsprophet/exHierarchy.jpg)
-
+!![Screenshot](exHierarchy.jpg)
 
 
 
