@@ -29,18 +29,14 @@ I made a function called makeWeekly (Assumes you have max 4 categorical columns)
 
 So the data looked like this:
 
-|    Date   |   Platform    |
-| ----------| ------------- |
-| 1100 B.C. | Stone Tablet  |
-|   ...     |   Car Phone   |
-Date	Platform	Medium	Business_Market	Sessions
-1100 B.C.	Stone Tablet	Land	Tokyo	23234
-…	Car Phone	Air	Hamburg	2342
-	…	Sea	Tenochitlan	233
-		…	Alexandria	445
-			…	46362
-				…
-        
+|   Date   |   Platform   |   Medium   |   BusinessMarket   |   Sessions   |
+|----------|--------------|------------|--------------------|--------------|
+| 1100 B.C.| Stone Tablet |    Land    |     Birmingham     |	  23234    |
+|   ...    |   Car Phone  |     Air    |       Auburn       |	  2342	   |
+|          |      ...     |     Sea    |      Evanston      |	   233     |
+|          |              |     ...    |       Seattle      |	   445     |
+|          |              |            |	 ...	    |	  46362    |
+
 I then ran my orderHier() function with just this dataframe as its input.  NOTE: you cannot run this function if you have more than 4 columns in the middle (in between Date and Sessions for ex.)
 
 To run this function, you specify the data, and how you want your middle columns to be ordered.  So orderHier(data, 2, 1, 3) means you want the second column after date to be the first level of the hierarchy.
