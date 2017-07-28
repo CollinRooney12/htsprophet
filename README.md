@@ -17,7 +17,7 @@ It was my intention to make some of the code look similar to certain sections in
 
 1. pip install htsprophet
 
-If you'd like to just skip to coding with the package, runHTS.py should help you with that, but if you like reading the following should help you understand how I built htsprophet and how it works.
+If you'd like to just skip to coding with the package, **runHTS.py** should help you with that, but if you like reading, the following should help you understand how I built htsprophet and how it works.
 
 # Part I: The Data
 
@@ -25,7 +25,7 @@ I originally used Redfin traffic data to build this package.
 
 I pulled the data so that date was in the first column, my layers were the middle columns, and the number I wanted to forecast was in the last column.
 
-I made a function called makeWeekly (Assumes you have max 4 categorical columns), that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me.
+I made a function called **makeWeekly()** (Assumes you have max 4 categorical columns), that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me.
 
 So the data looked like this:
 
@@ -37,9 +37,13 @@ So the data looked like this:
 |          |              |     ...    |       Seattle      |	   445     |
 |          |              |            |	 ...	    |	  46362    |
 
-I then ran my orderHier() function with just this dataframe as its input.  NOTE: you cannot run this function if you have more than 4 columns in the middle (in between Date and Sessions for ex.)
+I then ran my **orderHier()** function with just this dataframe as its input.  
 
-To run this function, you specify the data, and how you want your middle columns to be ordered.  So orderHier(data, 2, 1, 3) means you want the second column after date to be the first level of the hierarchy.
+**NOTE: you cannot run this function if you have more than 4 columns in the middle (in between Date and Sessions for ex.)**
+
+To run this function, you specify the data, and how you want your middle columns to be ordered.  
+
+So orderHier(data, 2, 1, 3) means you want the second column after date to be the first level of the hierarchy.
 
 Our example would look like this:
 
@@ -75,9 +79,13 @@ There are 4 business markets for each of those nodes: Tokyo, Hamburg etc.
 
 If you use the orderHier function, nodes will be the second output of the function.
 
-# Part II: Prophet inputs
+# Part II: Prophet Inputs
 
-Anything that you would specify in Prophet you can specify in hts(). It’s also flexible and will allow you to input a dataframe of values for inputs like cap, capF, and changepoints.  All of these inputs are specified when you call hts, and after that you just let it run.
+Anything that you would specify in Prophet you can specify in hts(). 
+
+It’s flexible and will allow you to input a dataframe of values for inputs like cap, capF, and changepoints.
+
+All of these inputs are specified when you call hts, and after that you just let it run.
 
 The following is the description of inputs and outputs for hts as well as the specified defaults:
 
@@ -142,7 +150,7 @@ Don’t forget to specify the frequency if you’re not using Daily data.
 
 All other functions should be self-explanatory.
 
-# Part III: Room For improvement
+# Part III: Room For Improvement
 
 The package could benefit from the following two things:
 1. A way to run some of it in parallel, cause it take a while sometimes.
