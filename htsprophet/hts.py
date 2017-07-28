@@ -21,7 +21,7 @@ import pandas as pd
 import numpy as np
 import sys
 from sklearn.model_selection import TimeSeriesSplit
-import fitForecast
+import htsprophet.fitForecast as fitForecast
 
 #%%
 def hts(y, h = 1, nodes = [2], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \

@@ -19,8 +19,8 @@ It was my intention to make some of the code look similar to certain sections in
 
 import pandas as pd
 import sys
-import hts
-import htsPlot
+import htsprophet.hts as hts
+import htsprophet.htsPlot as htsPlot
 import numpy as np
 
 #%% Random data (Change this to whatever data you want)
