@@ -24,7 +24,7 @@ from sklearn.model_selection import TimeSeriesSplit
 import htsprophet.fitForecast as fitForecast
 
 #%%
-def hts(y, h = 1, nodes = [2], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
+def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
         n_changepoints = 25, yearly_seasonality = 'auto', weekly_seasonality = 'auto', holidays = None, seasonality_prior_scale = 10.0, \
         holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0):
     '''
@@ -187,7 +187,7 @@ def hts(y, h = 1, nodes = [2], method='OC', freq = 'D', include_history = True, 
         ##
         # Split into train and test, using time series split, and predict the test set
         ##
-        for trainIndex, testIndex in tscv.split(y.time):
+        for trainIndex, testIndex in tscv.split(y.iloc[:,0]):
             ynew1 = fitForecast.optimalComb(y.iloc[trainIndex, :], len(testIndex), sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
