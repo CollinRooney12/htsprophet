@@ -1,9 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from htsprophet.hts import hts
-from htsprophet.makeWeekly import makeWeekly
-from htsprophet.orderHier import orderHier 
+from htsprophet.hts import hts, makeWeekly, orderHier
 
 
 class testHTSOut(unittest.TestCase):
