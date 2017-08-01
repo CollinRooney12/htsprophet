@@ -25,7 +25,7 @@ I originally used Redfin traffic data to build this package.
 
 I pulled the data so that date was in the first column, my layers were the middle columns, and the number I wanted to forecast was in the last column.
 
-I made a function called **makeWeekly()** (Assumes you have max 4 categorical columns), that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me.
+I made a function called **makeWeekly()** , that rolls up your data into the weekly level.  It’s not a necessary function, it was mostly just convenient for me.
 
 So the data looked like this:
 
