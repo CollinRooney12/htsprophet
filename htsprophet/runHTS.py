@@ -61,7 +61,7 @@ holidays["upper_window"] = [0]*5
 #
 # NOTE: CVselect takes a while, so if you want results in minutes instead of half-hours pick a different method
 ##
-myDict = hts.hts(data2, 52, nodes, holidays = holidays, freq = 'W', method = "cvSelect")
+myDict = hts(data2, 52, nodes, holidays = holidays, freq = 'W', method = "cvSelect")
 ##
 # This output is a dictionary of dataframes, so you can do any further analysis that you may want. It also allows you to plot the forecasts.
 # Some functions I've made are: (1 means I'm plotting the total node)
