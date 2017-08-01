@@ -18,10 +18,8 @@ It was my intention to make some of the code look similar to certain sections in
 """
 
 import pandas as pd
-from htsprophet.hts import hts
-import htsprophet.htsPlot as htsPlot
-from htsprophet.orderHier import orderHier
-from htsprophet.makeWeekly import makeWeekly
+from htsprophet.hts import hts, orderHier, makeWeekly
+from htsprophet.htsPlot import plotNode, plotChild, plotNodeComponents
 import numpy as np
 
 #%% Random data (Change this to whatever data you want)
@@ -68,6 +66,6 @@ myDict = hts.hts(data2, 52, nodes, holidays = holidays, freq = 'W', method = "cv
 # This output is a dictionary of dataframes, so you can do any further analysis that you may want. It also allows you to plot the forecasts.
 # Some functions I've made are: (1 means I'm plotting the total node)
 ##
-htsPlot.plotNode(myDict, 1, h = 52, xlabel = "Week", ylabel = "Number of Sessions")
-htsPlot.plotChild(myDict, 1, nodes, h = 52, xlabel = "Week", ylabel = "Number of Sessions", legend = ["Total","Air","Land","Sea"])
-htsPlot.plotNodeComponents(myDict, column = 1, holidays = holidays)
+plotNode(myDict, 1, h = 52, xlabel = "Week", ylabel = "Number of Sessions")
+plotChild(myDict, 1, nodes, h = 52, xlabel = "Week", ylabel = "Number of Sessions", legend = ["Total","Air","Land","Sea"])
+plotNodeComponents(myDict, column = 1, holidays = holidays)
