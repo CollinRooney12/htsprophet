@@ -85,9 +85,9 @@ def bottomUp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_cha
                                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
 
-    hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
+    hatMat = np.zeros([h,1]) 
     for key in range(nForecasts-sumMat.shape[1], ncols-1):
-        f1 = np.array(forecastsDict[key].yhat)
+        f1 = np.array(forecastsDict[key].yhat[-h:])
         f2 = f1[:, np.newaxis]
         if np.all(hatMat == 0):
             hatMat = f2
@@ -101,7 +101,9 @@ def bottomUp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_cha
     # The following is the calculation of PI, from Hyndman MinT (for definition of residuals) and Hyndman 2011 (for estimation of covariance Mat)
     ##
     for key in forecastsDict.keys():
-        forecastsDict[key].yhat = newMat[:,key]
+        values = forecastsDict[key].yhat.values
+        values[-h:] = newMat[:,key]
+        forecastsDict[key].yhat = values
     
     return forecastsDict
         
@@ -147,7 +149,7 @@ def averageHistProp(y, h, sumMat, freq, include_history, cap, capF, changepoints
     ##
     # Find Proportions
     ##
-    fcst = forecastsDict[0].yhat
+    fcst = forecastsDict[0].yhat[-h:]
     fcst = fcst[:, np.newaxis]
     numBTS = sumMat.shape[1]
     btsDat = pd.DataFrame(y.iloc[:,ncols-numBTS:ncols])
@@ -166,7 +168,9 @@ def averageHistProp(y, h, sumMat, freq, include_history, cap, capF, changepoints
     # Hyndman releases a PI calculation on R
     ##
     for key in forecastsDict.keys():
-        forecastsDict[key].yhat = newMat[:,key]
+        values = forecastsDict[key].yhat.values
+        values[-h:] = newMat[:,key]
+        forecastsDict[key].yhat = values
     
     return forecastsDict
 
@@ -211,7 +215,7 @@ def propHistAvg(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_
     ##
     # Find Proportions
     ##
-    fcst = forecastsDict[0].yhat
+    fcst = forecastsDict[0].yhat[-h:]
     fcst = fcst[:, np.newaxis]
     numBTS = sumMat.shape[1]
     btsDat = pd.DataFrame(y.iloc[:,ncols-numBTS:ncols])
@@ -230,7 +234,9 @@ def propHistAvg(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_
     # The following is the calculation of PI, from Hyndman MinT (for definition of residuals) and Hyndman 2011 (for estimation of covariance Mat)
     ##
     for key in forecastsDict.keys():
-        forecastsDict[key].yhat = newMat[:,key]
+        values = forecastsDict[key].yhat.values
+        values[-h:] = newMat[:,key]
+        forecastsDict[key].yhat = values
     
     return forecastsDict
     
@@ -277,8 +283,8 @@ def forecastProp(y, h, nodes, freq, include_history, cap, capF, changepoints, n_
     levels = len(nodes)
     column = 0
     firstNode = 1
-    newMat = np.empty([len(forecastsDict[0].yhat),ncols-1])
-    newMat[:,0] = forecastsDict[0].yhat
+    newMat = np.empty([len(forecastsDict[0].yhat[-h:]),ncols-1])
+    newMat[:,0] = forecastsDict[0].yhat[-h:]
     lst = [x for x in range(nForecasts)]
     for level in range(levels):
         nodesInLevel = len(nodes[level])
@@ -287,11 +293,11 @@ def forecastProp(y, h, nodes, freq, include_history, cap, capF, changepoints, n_
             numChild = nodes[level][node]
             lastNode = firstNode + numChild
             lst = [x for x in range(firstNode, lastNode)]
-            baseFcst = np.array([forecastsDict[k].yhat for k in lst])
+            baseFcst = np.array([forecastsDict[k].yhat[-h:] for k in lst])
             foreSum = np.sum(baseFcst, axis = 0)
             foreSum = foreSum[:, np.newaxis]
             if column == 0:
-                revTop = np.array(forecastsDict[column].yhat)
+                revTop = np.array(forecastsDict[column].yhat[-h:])
                 revTop = revTop[:, np.newaxis]
             else:
                 revTop = np.array(newMat[:,column])
@@ -303,7 +309,9 @@ def forecastProp(y, h, nodes, freq, include_history, cap, capF, changepoints, n_
     # The following is the calculation of PI, from Hyndman MinT (for definition of residuals) and Hyndman 2011 (for estimation of covariance Mat)
     ##
     for key in forecastsDict.keys():
-        forecastsDict[key].yhat = newMat[:,key]
+        values = forecastsDict[key].yhat.values
+        values[-h:] = newMat[:,key]
+        forecastsDict[key].yhat = values
     
     return forecastsDict
 
@@ -341,9 +349,9 @@ def optimalComb(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_
                                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
 
-    hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
+    hatMat = np.zeros([h,1]) 
     for key in forecastsDict.keys():
-        f1 = np.array(forecastsDict[key].yhat)
+        f1 = np.array(forecastsDict[key].yhat[-h:])
         f2 = f1[:, np.newaxis]
         if np.all(hatMat == 0):
             hatMat = f2
@@ -361,6 +369,8 @@ def optimalComb(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_
     # The following is the calculation of PI, from Hyndman MinT (for definition of residuals) and Hyndman 2011 (for estimation of covariance Mat)
     ##
     for key in forecastsDict.keys():
-        forecastsDict[key].yhat = newMat[:,key]
-    
+        values = forecastsDict[key].yhat.values
+        values[-h:] = newMat[:,key]
+        forecastsDict[key].yhat = values
+        
     return forecastsDict
