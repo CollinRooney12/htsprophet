@@ -21,7 +21,7 @@ import pandas as pd
 import numpy as np
 import sys
 from sklearn.model_selection import TimeSeriesSplit
-import htsprophet.fitForecast as fitForecast
+from htsprophet.fitForecast import fitForecast
 
 #%%
 def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
@@ -146,37 +146,13 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         if len(capF.columns) != len(y.columns)-1:
             sys.exit("If capF is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
     ##
-    # Run specified approach if desired
+    # Run specified approach
     ##
-    if method == 'OC':
-        sumMat = SummingMat(nodes)
-        ynew = fitForecast.optimalComb(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-    if method == 'FP':
-        sumMat = SummingMat(nodes)
-        ynew = fitForecast.forecastProp(y, h, nodes, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                             yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                             changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-    if method == 'PHA':
-        sumMat = SummingMat(nodes)
-        ynew = fitForecast.propHistAvg(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-    if method == 'AHP':
-        sumMat = SummingMat(nodes)
-        ynew = fitForecast.averageHistProp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-    if method == 'BU':
-        sumMat = SummingMat(nodes)
-        ynew = fitForecast.bottomUp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                         yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                         changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
     if method == 'cvSelect':
         ##
         # Run all of the Methods and let 3 fold CV chose which is best for you
         ##
+        methodList = ['OC','FP','PHA','AHP','BU']
         sumMat = SummingMat(nodes)
         tscv = TimeSeriesSplit(n_splits=3)
         MASE1 = []
@@ -188,21 +164,21 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         # Split into train and test, using time series split, and predict the test set
         ##
         for trainIndex, testIndex in tscv.split(y.iloc[:,0]):
-            ynew1 = fitForecast.optimalComb(y.iloc[trainIndex, :], len(testIndex), sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
+            ynew1 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[0], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            ynew2 = fitForecast.forecastProp(y.iloc[trainIndex, :], len(testIndex), nodes, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            ynew3 = fitForecast.propHistAvg(y.iloc[trainIndex, :], len(testIndex), sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
+            ynew2 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[1], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            ynew4 = fitForecast.averageHistProp(y.iloc[trainIndex, :], len(testIndex), sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            ynew5 = fitForecast.bottomUp(y.iloc[trainIndex, :], len(testIndex), sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                             yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                             changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+            ynew3 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[2], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+            ynew4 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[3], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+            ynew5 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[4], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
             for key in ynew1.keys():
                 MASE1.append(sum(abs(ynew1[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
                 MASE2.append(sum(abs(ynew2[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
@@ -212,34 +188,19 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         ##
         # If the method has the minimum Average MASE, use it on all of the data
         ##
-        choice = min([np.mean(MASE1), np.mean(MASE2), np.mean(MASE3), np.mean(MASE4), np.mean(MASE5)])
-        
-        if choice == np.mean(MASE1):
-            ynew = fitForecast.optimalComb(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                               yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                               changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            print("OC")
-        if choice == np.mean(MASE2):
-            ynew = fitForecast.forecastProp(y, h, nodes, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            print("FP")
-        if choice == np.mean(MASE3):
-            ynew = fitForecast.propHistAvg(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                               yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                               changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            print("PHA")
-        if choice == np.mean(MASE4):
-            ynew = fitForecast.averageHistProp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                   yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                   changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            print("AHP")
-        if choice == np.mean(MASE5):
-            ynew = fitForecast.bottomUp(y, h, sumMat, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-            print("BU")
-
+        choices = [np.mean(MASE1), np.mean(MASE2), np.mean(MASE3), np.mean(MASE4), np.mean(MASE5)]
+        choice = methodList[choices.index(min(choices))]
+        ynew = fitForecast(y, h, sumMat, nodes, choice, freq, include_history, cap, capF, changepoints, n_changepoints, \
+                           yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+        print(choice)
+    
+    else:    
+        sumMat = SummingMat(nodes)
+        ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
+                           yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+    
     return ynew
 
 #%% Roll-up data to week level 
