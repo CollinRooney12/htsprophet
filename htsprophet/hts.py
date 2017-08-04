@@ -220,7 +220,7 @@ def makeWeekly(data):
     return data1
 
 #%% Create Ordering Function
-def orderHier(data, col1 = None, col2 = None, col3 = None, col4 = None, rmZeros = False):
+def orderHier(data, col1 = 1, col2 = None, col3 = None, col4 = None, rmZeros = False):
     # 
     #This function will order the hierarchy the way you like it as long as you are
     #using max 4 layers
@@ -270,14 +270,12 @@ def orderHier(data, col1 = None, col2 = None, col3 = None, col4 = None, rmZeros 
     #                         specified.
     #
     #
-    if col1 not in [1,2,3]:
+    if col1 not in [1,2,3,4]:
         sys.exit("col1 should equal 1, 2, 3, or 4")
-    if col2 not in [1,2,3]:
-        sys.exit("col2 should equal 1, 2, 3, or 4")
-    if col3 is not None and col3 not in [1,2,3]:
+    if col2 is not None and col2 not in [1,2,3,4]:
         sys.exit("col3 should equal 1, 2, 3, or 4")
-    if col1 == col2 | col1 == col3 | col2 == col3:
-        sys.exit("col1, col2, and col3 should all have different values")
+    if col3 is not None and col3 not in [1,2,3,4]:
+        sys.exit("col3 should equal 1, 2, 3, or 4")
     if col1 is None:
         sys.exit("You need at least 1 column specified")
     if col2 is None:
@@ -287,18 +285,24 @@ def orderHier(data, col1 = None, col2 = None, col3 = None, col4 = None, rmZeros 
         lengthList = [len(uniqueList[0])]
         numIn = 1
     elif col3 is None:
+        if col1 == col2:
+            sys.exit("col1, col2 should all have different values")
         orderList = [col1, col2]
         dimList = [data.columns.tolist()[1], data.columns.tolist()[2]]
         uniqueList = [data.iloc[:,1].unique(), data.iloc[:,2].unique()]
         lengthList = [len(uniqueList[0]), len(uniqueList[1])]
         numIn = 2
     elif col4 is None:
+        if col1 == col2 or col1 == col3 or col2 == col3:
+            sys.exit("col1, col2, and col3 should all have different values")
         orderList = [col1,col2,col3]
         dimList = [data.columns.tolist()[1],data.columns.tolist()[2],data.columns.tolist()[3]]
         uniqueList = [data.iloc[:,1].unique(), data.iloc[:,2].unique(), data.iloc[:,3].unique()]
         lengthList = [len(uniqueList[0]), len(uniqueList[1]), len(uniqueList[2])]
         numIn = 3
     else:
+        if col1 == col2 or col1 == col3 or col2 == col3 or col1 == col4 or col2 == col4 or col3 == col4:
+            sys.exit("col1, col2, col3, and col4 should all have different values")
         orderList = [col1,col2,col3,col4]
         dimList = [data.columns.tolist()[1],data.columns.tolist()[2],data.columns.tolist()[3],data.columns.tolist()[4]]
         uniqueList = [data.iloc[:,1].unique(), data.iloc[:,2].unique(), data.iloc[:,3].unique(), data.iloc[:,4].unique()]
