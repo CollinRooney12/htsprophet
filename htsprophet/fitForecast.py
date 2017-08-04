@@ -87,9 +87,9 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
              Cons:
                Bottom level data can be noisy and more challenging to model and forecast
             '''
-            hatMat = np.zeros([h,1]) 
+            hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
             for key in range(nCols-sumMat.shape[1]-1, nCols-1):
-                f1 = np.array(forecastsDict[key].yhat[-h:])
+                f1 = np.array(forecastsDict[key].yhat)
                 f2 = f1[:, np.newaxis]
                 if np.all(hatMat == 0):
                     hatMat = f2
@@ -106,7 +106,7 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             ##
             # Find Proportions
             ##
-            fcst = forecastsDict[0].yhat[-h:]
+            fcst = forecastsDict[0].yhat
             fcst = fcst[:, np.newaxis]
             numBTS = sumMat.shape[1]
             btsDat = pd.DataFrame(y.iloc[:,nCols-numBTS:nCols])
@@ -125,7 +125,7 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             ##
             # Find Proportions
             ##
-            fcst = forecastsDict[0].yhat[-h:]
+            fcst = forecastsDict[0].yhat
             fcst = fcst[:, np.newaxis]
             numBTS = sumMat.shape[1]
             btsDat = pd.DataFrame(y.iloc[:,nCols-numBTS:nCols])
@@ -140,19 +140,19 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             newMat[i,:] = np.dot(sumMat, np.transpose(hatMat[i,:]))
 
     if method == 'FP':
-        newMat = forecastProp(forecastsDict, h, nodes)
+        newMat = forecastProp(forecastsDict, nodes)
     if method == 'OC':
-        newMat = optimalComb(forecastsDict, h, sumMat)
+        newMat = optimalComb(forecastsDict, sumMat)
     
     for key in forecastsDict.keys():
         values = forecastsDict[key].yhat.values
-        values[-h:] = newMat[:,key]
+        values = newMat[:,key]
         forecastsDict[key].yhat = values
     
     return forecastsDict
     
 #%%    
-def forecastProp(forecastsDict, h, nodes):
+def forecastProp(forecastsDict, nodes):
     '''
      Cons:
        Produces biased revised forecasts even if base forecasts are unbiased
@@ -164,8 +164,8 @@ def forecastProp(forecastsDict, h, nodes):
     levels = len(nodes)
     column = 0
     firstNode = 1
-    newMat = np.empty([len(forecastsDict[0].yhat[-h:]),nCols - 1])
-    newMat[:,0] = forecastsDict[0].yhat[-h:]
+    newMat = np.empty([len(forecastsDict[0].yhat),nCols - 1])
+    newMat[:,0] = forecastsDict[0].yhat
     lst = [x for x in range(nCols-1)]
     for level in range(levels):
         nodesInLevel = len(nodes[level])
@@ -174,11 +174,11 @@ def forecastProp(forecastsDict, h, nodes):
             numChild = nodes[level][node]
             lastNode = firstNode + numChild
             lst = [x for x in range(firstNode, lastNode)]
-            baseFcst = np.array([forecastsDict[k].yhat[-h:] for k in lst])
+            baseFcst = np.array([forecastsDict[k].yhat[:] for k in lst])
             foreSum = np.sum(baseFcst, axis = 0)
             foreSum = foreSum[:, np.newaxis]
             if column == 0:
-                revTop = np.array(forecastsDict[column].yhat[-h:])
+                revTop = np.array(forecastsDict[column].yhat)
                 revTop = revTop[:, np.newaxis]
             else:
                 revTop = np.array(newMat[:,column])
@@ -190,11 +190,11 @@ def forecastProp(forecastsDict, h, nodes):
     return newMat
 
 #%%    
-def optimalComb(forecastsDict, h, sumMat):
+def optimalComb(forecastsDict, sumMat):
 
-    hatMat = np.zeros([h,1]) 
+    hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
     for key in forecastsDict.keys():
-        f1 = np.array(forecastsDict[key].yhat[-h:])
+        f1 = np.array(forecastsDict[key].yhat)
         f2 = f1[:, np.newaxis]
         if np.all(hatMat == 0):
             hatMat = f2
