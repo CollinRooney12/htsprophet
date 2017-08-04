@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(name = 'htsprophet',
-      version = '0.0.1',
+      version = '0.0.8',
       description = "Creates Hierarchical Time Series Forecasts with Facebook's Prophet tool",
-      url = "http://github.com/CollinRooney12/htsprophet",
+      url = "https://github.com/CollinRooney12/htsprophet",
       author = "Collin Rooney",
       author_email = 'CollinRooney12@gmail.com',
       license = 'MIT',
@@ -17,6 +17,5 @@ setup(name = 'htsprophet',
               'pandas>=0.18.1',
               'numpy',
               'fbprophet',
-              'sys',
               'scikit-learn>=0.18'],
        )
