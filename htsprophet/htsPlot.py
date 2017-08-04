@@ -75,16 +75,16 @@ def plotNode(dictframe, column, h = 1, xlabel = 'ds', ylabel = 'y', startFrom = 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     fig.tight_layout()
-    return
+    return fig
 
 #%%
 def plotWeekly(dictframe, ax, uncertainty, weeklyStart, color='#0072B2'):
 
     if ax is None:
-        fig = plt.figure(facecolor='w', figsize=(10, 6))
-        ax = fig.add_subplot(111)
+        figW = plt.figure(facecolor='w', figsize=(10, 6))
+        ax = figW.add_subplot(111)
     else:
-        fig = ax.get_figure()
+        figW = ax.get_figure()
     ##
     # Create a list of 7 days for the x axis of the plot
     ##
@@ -111,16 +111,16 @@ def plotWeekly(dictframe, ax, uncertainty, weeklyStart, color='#0072B2'):
     ax.set_xticklabels(dictframe['ds'][ind].dt.weekday_name)
     ax.set_xlabel('Day of week')
     ax.set_ylabel('weekly')
-    fig.tight_layout()
-    return
+    figW.tight_layout()
+    return figW
     
 def plotYearly(dictframe, ax, uncertainty, color='#0072B2'):
 
     if ax is None:
-        fig = plt.figure(facecolor='w', figsize=(10, 6))
-        ax = fig.add_subplot(111)
+        figY = plt.figure(facecolor='w', figsize=(10, 6))
+        ax = figY.add_subplot(111)
     else:
-        fig = ax.get_figure()
+        figY = ax.get_figure()
     ##
     # Find the max index for an entry of each month
     ##
@@ -142,17 +142,17 @@ def plotYearly(dictframe, ax, uncertainty, color='#0072B2'):
     ax.set_xlabel('Day of year')
     ax.set_ylabel('yearly')
     fig.tight_layout()
-    return
+    return figY
 
 def plotHolidays(dictframe, holidays, ax, uncertainty, color='#0072B2'):
     ##
     # This function is largely the same as the one in Prophet
     ##
     if ax is None:
-        fig = plt.figure(facecolor='w', figsize=(10, 6))
-        ax = fig.add_subplot(111)
+        figH = plt.figure(facecolor='w', figsize=(10, 6))
+        ax = figH.add_subplot(111)
     else:
-        fig = ax.get_figure()
+        figH = ax.get_figure()
     holidayComps = holidays.holiday.unique().tolist()
     yHoliday = dictframe[holidayComps].sum(1)
     yHolidayL = dictframe[[h + '_lower' for h in holidayComps]].sum(1)
@@ -167,18 +167,18 @@ def plotHolidays(dictframe, holidays, ax, uncertainty, color='#0072B2'):
     ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
     ax.set_xlabel('ds')
     ax.set_ylabel('holidays')
-    fig.tight_layout()
-    return
+    figH.tight_layout()
+    return figH
 
 def plotTrend(dictframe, ax, uncertainty, plotCap, color='#0072B2'):
     ##
     # This function is largely the same as the one in Prophet
     ##
     if ax is None:
-        fig = plt.figure(facecolor='w', figsize=(10, 6))
-        ax = fig.add_subplot(111)
+        figT = plt.figure(facecolor='w', figsize=(10, 6))
+        ax = figT.add_subplot(111)
     else:
-        fig = ax.get_figure()
+        figT = ax.get_figure()
     ax.plot(dictframe['ds'].values, dictframe['trend'], ls='-', c=color)
     if 'cap' in dictframe and plotCap:
         ax.plot(dictframe['ds'].values, dictframe['cap'], ls='--', c='k')
@@ -187,8 +187,8 @@ def plotTrend(dictframe, ax, uncertainty, plotCap, color='#0072B2'):
     ax.grid(True, which='major', c='gray', ls='-', lw=1, alpha=0.2)
     ax.set_xlabel('ds')
     ax.set_ylabel('trend')
-    fig.tight_layout()
-    return
+    figT.tight_layout()
+    return figT
 
 def plotNodeComponents(dictframe, column, holidays = None, uncertainty=False, plotCap=False, weeklyStart = 0, ax=None,):
     '''
@@ -328,4 +328,4 @@ def plotChild(dictframe, column, nodes, h = 1, xlabel = 'ds', ylabel = 'y', star
     ax.legend()
     fig.tight_layout()
     
-    return
+    return fig
