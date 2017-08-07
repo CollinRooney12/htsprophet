@@ -180,11 +180,11 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
             for key in ynew1.keys():
-                MASE1.append(sum(abs(ynew1[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
-                MASE2.append(sum(abs(ynew2[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
-                MASE3.append(sum(abs(ynew3[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
-                MASE4.append(sum(abs(ynew4[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
-                MASE5.append(sum(abs(ynew5[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values))/((len(testIndex)/(len(testIndex)-1))*sum(abs(y.iloc[testIndex[1:], key + 1].values - y.iloc[testIndex[:-1], key + 1].values))))
+                MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
+                MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
+                MASE3.append(abs(ynew3[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
+                MASE4.append(abs(ynew4[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
+                MASE5.append(abs(ynew5[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
         ##
         # If the method has the minimum Average MASE, use it on all of the data
         ##

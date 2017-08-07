@@ -75,6 +75,11 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             # Base Forecasts
             ##
             forecastsDict[node] = m.predict(future)
+            ##
+            # If logistic use exponential function, so that values can be added correctly
+            ##
+            if capF is not None:
+                forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
     ##
     # Now, Revise them
     ##
@@ -148,7 +153,12 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         values = forecastsDict[key].yhat.values
         values = newMat[:,key]
         forecastsDict[key].yhat = values
-    
+    ##
+    # If Logistic fit values with natural log function to revert back to format of input
+    ##
+    if capF is not None:
+        forecastsDict[node].yhat = np.log(forecastsDict[node].yhat)
+        
     return forecastsDict
     
 #%%    
