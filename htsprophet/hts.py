@@ -22,12 +22,13 @@ import numpy as np
 import sys
 from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
+from scipy.stats import boxcox
 from scipy.special import inv_boxcox
 
 #%%
-def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
+def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, include_history = True, cap = None, capF = None, changepoints = None, \
         n_changepoints = 25, yearly_seasonality = 'auto', weekly_seasonality = 'auto', holidays = None, seasonality_prior_scale = 10.0, \
-        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0, boxcoxT = False):
+        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0):
     '''
     Parameters
     ----------------
@@ -65,6 +66,8 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
      
      freq - (Time Frequency) input for the forecasting function of Prophet 
      
+     transform - (None or "BoxCox") Do you want to transform your data before fitting the prophet function? If yes, type "BoxCox"
+     
      include_history - (Boolean) input for the forecasting function of Prophet
                 
      cap - (Dataframe or Constant) carrying capacity of the input time series.  If it is a dataframe, then
@@ -87,6 +90,23 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
     
     '''
     # Function Definitions
+    ##
+    # Box Cox Inverse Transform
+    ##
+    def boxcoxDict(data, lmbda = 0):
+        
+        for key in data.keys():
+            data[key].yhat = inv_boxcox(data[key].yhat, lmbda[key])
+            data[key].trend = inv_boxcox(data[key].trend, lmbda[key])
+            if "seasonal" in data[key].columns.tolist():
+                data[key].seasonal = inv_boxcox(data[key].seasonal, lmbda[key])
+            if "weekly" in data[key].columns.tolist():
+                data[key].weekly = inv_boxcox(data[key].weekly, lmbda[key])
+            if "yearly" in data[key].columns.tolist():
+                data[key].yearly = inv_boxcox(data[key].yearly, lmbda[key])
+            if "holidays" in data[key].columns.tolist():
+                data[key].yearly = inv_boxcox(data[key].yearly, lmbda[key])
+        return data
     ##
     #  "Creating the summing matrix" funciton
     ##
@@ -147,6 +167,17 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         if len(capF.columns) != len(y.columns)-1:
             sys.exit("If capF is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
     ##
+    # Transform Variables
+    ##
+    if transform is not None:
+        if transform == 'BoxCox':
+            lmbda = []
+            boxcoxT = True
+            for column in range(len(y.columns.tolist())-1):
+                y.iloc[:,column+1], lmbda[column] = boxcox(y.iloc[:, column+1])
+    else:
+        boxcoxT = False
+    ##
     # Run specified approach
     ##
     if method == 'cvSelect':
@@ -201,6 +232,10 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
+    
+    if transform is not None:
+        if transform == "BoxCox":
+            ynew = boxcoxDict(ynew, lmbda)
     
     return ynew
 
@@ -438,18 +473,3 @@ def orderHier(data, col1 = 1, col2 = None, col3 = None, col4 = None, rmZeros = F
 
     return y, nodes
 
-#%%
-def boxcoxDict(data, lmbda = 0):
-    for key in data.keys():
-        data[key].yhat = inv_boxcox(data[key].yhat, lmbda)
-        data[key].trend = inv_boxcox(data[key].trend, lmbda)
-        if "seasonal" in data[key].columns.tolist():
-            data[key].seasonal = inv_boxcox(data[key].seasonal, lmbda)
-        if "weekly" in data[key].columns.tolist():
-            data[key].weekly = inv_boxcox(data[key].weekly, lmbda)
-        if "yearly" in data[key].columns.tolist():
-            data[key].yearly = inv_boxcox(data[key].yearly, lmbda)
-        if "holidays" in data[key].columns.tolist():
-            data[key].yearly = inv_boxcox(data[key].yearly, lmbda)
-        
-    return data
