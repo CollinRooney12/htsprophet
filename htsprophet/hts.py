@@ -171,12 +171,11 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     ##
     if transform is not None:
         if transform == 'BoxCox':
-            lmbda = [None]*(len(y.columns.tolist())-1)
-            boxcoxT = True
+            boxcoxT = [None]*(len(y.columns.tolist())-1)
             for column in range(len(y.columns.tolist())-1):
-                y.iloc[:,column+1], lmbda[column] = boxcox(y.iloc[:, column+1])
+                y.iloc[:,column+1], boxcoxT[column] = boxcox(y.iloc[:, column+1])
     else:
-        boxcoxT = False
+        boxcoxT = None
     ##
     # Run specified approach
     ##
@@ -235,7 +234,7 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     
     if transform is not None:
         if transform == "BoxCox":
-            ynew = boxcoxDict(ynew, lmbda)
+            ynew = boxcoxDict(ynew, boxcoxT)
     
     return ynew
 

@@ -82,9 +82,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             ##
             if capF is not None:
                 forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
-            if boxcoxT is True:
-                lmbda = []*nForecasts
-                forecastsDict[node].yhat, lmbda[node] = inv_boxcox(forecastsDict[node].yhat)
+            if boxcoxT is not None:
+                forecastsDict[node].yhat = inv_boxcox(forecastsDict[node].yhat, boxcoxT[node])
     ##
     # Now, Revise them
     ##
@@ -163,8 +162,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         ##
         if capF is not None:
             forecastsDict[key].yhat = np.log(forecastsDict[key].yhat)
-        if boxcoxT is True:
-            forecastsDict[key].yhat = boxcox(forecastsDict[key].yhat, lmbda[key])
+        if boxcoxT is not None:
+            forecastsDict[key].yhat, _ = boxcox(forecastsDict[key].yhat)
         
     return forecastsDict
     
