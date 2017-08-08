@@ -22,6 +22,7 @@ import numpy as np
 import sys
 from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
+from scipy.special import inv_boxcox
 
 #%%
 def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
@@ -436,3 +437,19 @@ def orderHier(data, col1 = 1, col2 = None, col3 = None, col4 = None, rmZeros = F
         nodes.append(numberList)
 
     return y, nodes
+
+#%%
+def boxcoxDict(data, lmbda = 0):
+    for key in data.keys():
+        data[key].yhat = inv_boxcox(data[key].yhat, lmbda)
+        data[key].trend = inv_boxcox(data[key].trend, lmbda)
+        if "seasonal" in data[key].columns.tolist():
+            data[key].seasonal = inv_boxcox(data[key].seasonal, lmbda)
+        if "weekly" in data[key].columns.tolist():
+            data[key].weekly = inv_boxcox(data[key].weekly, lmbda)
+        if "yearly" in data[key].columns.tolist():
+            data[key].yearly = inv_boxcox(data[key].yearly, lmbda)
+        if "holidays" in data[key].columns.tolist():
+            data[key].yearly = inv_boxcox(data[key].yearly, lmbda)
+        
+    return data
