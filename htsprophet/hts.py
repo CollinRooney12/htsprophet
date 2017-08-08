@@ -26,7 +26,7 @@ from htsprophet.fitForecast import fitForecast
 #%%
 def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True, cap = None, capF = None, changepoints = None, \
         n_changepoints = 25, yearly_seasonality = 'auto', weekly_seasonality = 'auto', holidays = None, seasonality_prior_scale = 10.0, \
-        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0):
+        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0, boxcoxT = False):
     '''
     Parameters
     ----------------
@@ -166,19 +166,19 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         for trainIndex, testIndex in tscv.split(y.iloc[:,0]):
             ynew1 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[0], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
             ynew2 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[1], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
             ynew3 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[2], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
             ynew4 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[3], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
             ynew5 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[4], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
             for key in ynew1.keys():
                 MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
                 MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
@@ -192,14 +192,14 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', include_history = True
         choice = methodList[choices.index(min(choices))]
         ynew = fitForecast(y, h, sumMat, nodes, choice, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
         print(choice)
     
     else:    
         sumMat = SummingMat(nodes)
         ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                           changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
     
     return ynew
 

@@ -22,11 +22,13 @@ import pandas as pd
 import numpy as np
 from fbprophet import Prophet
 import contextlib, os
+from scipy.special import inv_boxcox
+from scipy.stats import boxcox
 
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples):
+                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT):
     
     forecastsDict = {}
     nForecasts = sumMat.shape[0]
@@ -80,6 +82,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             ##
             if capF is not None:
                 forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
+            if boxcoxT is True:
+                forecastsDict[node].yhat = inv_boxcox(forecastsDict[node].yhat)
     ##
     # Now, Revise them
     ##
@@ -158,6 +162,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         ##
         if capF is not None:
             forecastsDict[key].yhat = np.log(forecastsDict[key].yhat)
+        if boxcoxT is True:
+            forecastsDict[key].yhat = boxcox(forecastsDict[key].yhat)
         
     return forecastsDict
     
