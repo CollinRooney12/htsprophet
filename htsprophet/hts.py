@@ -20,6 +20,7 @@ It was my intention to make some of the code look similar to certain sections in
 import pandas as pd
 import numpy as np
 import sys
+import warnings
 from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
 from scipy.stats import boxcox
@@ -154,9 +155,13 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     if transform is not None:
         if transform == 'BoxCox':
             boxcoxT = [None]*(len(y.columns.tolist())-1)
+            warnings.filterwarnings('error')
             try:
                 for column in range(len(y.columns.tolist())-1):
                     y.iloc[:,column+1], boxcoxT[column] = boxcox(y.iloc[:, column+1])
+            ##
+            # Does a Natural Log Transform if scipy's boxcox cant deal
+            ##
             except Warning:
                 for column in range(len(y.columns.tolist())-1):
                     y.iloc[:,column+1] = boxcox(y.iloc[:, column+1], lmbda = 0)

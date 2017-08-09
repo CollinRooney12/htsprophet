@@ -23,12 +23,13 @@ import numpy as np
 from fbprophet import Prophet
 import contextlib, os
 from scipy.special import inv_boxcox
+import warnings
 
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT):
-    
+   
     forecastsDict = {}
     nForecasts = sumMat.shape[0]
     if method == 'FP':
@@ -57,6 +58,7 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         ##
         with contextlib.redirect_stdout(open(os.devnull, "w")):
             # Prophet related stuff
+            warnings.filterwarnings("ignore", category=DeprecationWarning)  #included b/c sometimes stops due to fbprophet using .ix
             nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[0] : 'ds'})
             nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[1] : 'y'})
             if capF is None:
