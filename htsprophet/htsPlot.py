@@ -141,7 +141,7 @@ def plotYearly(dictframe, ax, uncertainty, color='#0072B2'):
     ax.xaxis.set_major_locator(months)
     ax.set_xlabel('Day of year')
     ax.set_ylabel('yearly')
-    fig.tight_layout()
+    figY.tight_layout()
     return figY
 
 def plotHolidays(dictframe, holidays, ax, uncertainty, color='#0072B2'):

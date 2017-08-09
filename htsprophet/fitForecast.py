@@ -23,7 +23,6 @@ import numpy as np
 from fbprophet import Prophet
 import contextlib, os
 from scipy.special import inv_boxcox
-import warnings
 
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
@@ -58,7 +57,6 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         ##
         with contextlib.redirect_stdout(open(os.devnull, "w")):
             # Prophet related stuff
-            warnings.filterwarnings("ignore", category=DeprecationWarning)  #included b/c sometimes stops due to fbprophet using .ix
             nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[0] : 'ds'})
             nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[1] : 'y'})
             if capF is None:
