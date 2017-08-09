@@ -42,7 +42,7 @@ class testHTSOut(unittest.TestCase):
         self.assertEqual(len(myDict), sum(map(sum, nodes))+1)
         self.assertEqual(len(myDict[0].yhat), data2.shape[0]+52)
         self.assertTrue(all(myDict[0].yhat[-52:] <= (myDict[1].yhat[-52:] + myDict[2].yhat[-52:] + myDict[3].yhat[-52:])*1.001))
-        myDict = hts(data2, 52, nodes, freq = 'W', method = "OC")
+        myDict = hts(data2, 52, nodes, freq = 'W', method = "OLS")
         self.assertIsNotNone(myDict)
         self.assertEqual(len(myDict), sum(map(sum, nodes))+1)
         self.assertEqual(len(myDict[0].yhat), data2.shape[0]+52)
