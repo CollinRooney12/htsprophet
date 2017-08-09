@@ -154,8 +154,13 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     if transform is not None:
         if transform == 'BoxCox':
             boxcoxT = [None]*(len(y.columns.tolist())-1)
-            for column in range(len(y.columns.tolist())-1):
-                y.iloc[:,column+1], boxcoxT[column] = boxcox(y.iloc[:, column+1])
+            try:
+                for column in range(len(y.columns.tolist())-1):
+                    y.iloc[:,column+1], boxcoxT[column] = boxcox(y.iloc[:, column+1])
+            except Warning:
+                for column in range(len(y.columns.tolist())-1):
+                    y.iloc[:,column+1] = boxcox(y.iloc[:, column+1], lmbda = 0)
+                    boxcoxT[column] = 0
     else:
         boxcoxT = None
     ##
