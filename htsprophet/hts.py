@@ -26,7 +26,7 @@ from scipy.stats import boxcox
 
 
 #%%
-def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, include_history = True, cap = None, capF = None, changepoints = None, \
+def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, include_history = True, cap = None, capF = None, changepoints = None, \
         n_changepoints = 25, yearly_seasonality = 'auto', weekly_seasonality = 'auto', holidays = None, seasonality_prior_scale = 10.0, \
         holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0):
     '''
@@ -57,7 +57,9 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
      
      method - String  the type of hierarchical forecasting method that the user wants to use. 
                 Options:
-                "OC" - optimal combination (Default), 
+                "OLS" - optimal combination by Original Least Squares (Default), 
+                "WLSS" - optimal combination by Structurally Weighted Least Squares
+                "WLSV" - optimal combination by Error Variance Weighted Least Squares
                 "FP" - forcasted proportions (top-down)
                 "PHA" - proportions of historical averages (top-down)
                 "AHP" - average historical proportions (top-down)
@@ -133,8 +135,8 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     ##
     if h < 1:
         sys.exit('you must set h (number of step-ahead forecasts) to a positive number')
-    if method not in ['OC','FP','PHA','AHP','BU','cvSelect']:
-        sys.exit("not a valid method input, must be one of the following: 'OC','FP','PHA','AHP','BU','cvSelect'")
+    if method not in ['OLS','WLSS','WLSV','FP','PHA','AHP','BU','cvSelect']:
+        sys.exit("not a valid method input, must be one of the following: 'OLS','WLSS','WLSV','FP','PHA','AHP','BU','cvSelect'")
     if len(nodes) < 1:
         sys.exit("nodes input should at least be of length 1")
     if sum(list(map(sum, nodes))) != len(y.columns)-2:
@@ -177,7 +179,7 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
         ##
         # Run all of the Methods and let 3 fold CV chose which is best for you
         ##
-        methodList = ['OC','FP','PHA','AHP','BU']
+        methodList = ['OLS','FP','PHA','AHP','BU']
         sumMat = SummingMat(nodes)
         tscv = TimeSeriesSplit(n_splits=3)
         MASE1 = []

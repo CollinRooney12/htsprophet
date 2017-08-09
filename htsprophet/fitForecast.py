@@ -30,6 +30,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT):
    
     forecastsDict = {}
+    mse = {}
+    resids = {}
     nForecasts = sumMat.shape[0]
     if method == 'FP':
         nForecasts = sum(list(map(sum, nodes)))+1
@@ -73,9 +75,11 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
             if capF is not None:
                 future['cap'] = cap2
             ##
-            # Base Forecasts
+            # Base Forecasts, Residuals, and MSE
             ##
             forecastsDict[node] = m.predict(future)
+            resids[node] = y.iloc[:, node+1] - forecastsDict[node].yhat[:-h].values
+            mse[node] = np.mean(np.array(resids[node])**2)
             ##
             # If logistic use exponential function, so that values can be added correctly
             ##
@@ -159,8 +163,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
 
     if method == 'FP':
         newMat = forecastProp(forecastsDict, nodes)
-    if method == 'OC':
-        newMat = optimalComb(forecastsDict, sumMat)
+    if method == 'OLS' or method == 'WLSS' or method == 'WLSV':
+        newMat = optimalComb(forecastsDict, sumMat, method, mse)
     
     for key in forecastsDict.keys():
         values = forecastsDict[key].yhat.values
@@ -213,7 +217,7 @@ def forecastProp(forecastsDict, nodes):
     return newMat
 
 #%%    
-def optimalComb(forecastsDict, sumMat):
+def optimalComb(forecastsDict, sumMat, method, mse):
 
     hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
     for key in forecastsDict.keys():
@@ -226,8 +230,16 @@ def optimalComb(forecastsDict, sumMat):
     ##
     # Multiply the Summing Matrix Together S*inv(S'S)*S'
     ##
-    optiMat = np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.transpose(sumMat), sumMat))),np.transpose(sumMat))
-    
+    if method == "OLS":
+        optiMat = np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.transpose(sumMat), sumMat))),np.transpose(sumMat))
+    if method == "WLSS":
+        diagMat = np.diag(np.transpose(np.sum(sumMat, axis = 1)))
+        optiMat = np.dot(np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.dot(np.transpose(sumMat), np.linalg.inv(diagMat)), sumMat))), np.transpose(sumMat)), np.linalg.inv(diagMat))
+    if method == "WLSS":
+        diagMat = [np.repeat(mse[key], key) for key in mse.keys()]
+        diagMat = np.diag(np.flip(np.hstack(diagMat)+0.0000001, 0))
+        optiMat = np.dot(np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.dot(np.transpose(sumMat), np.linalg.inv(diagMat)), sumMat))), np.transpose(sumMat)), np.linalg.inv(diagMat))
+        
     newMat = np.empty([hatMat.shape[0],sumMat.shape[0]])
     for i in range(hatMat.shape[0]):
         newMat[i,:] = np.dot(optiMat, np.transpose(hatMat[i,:]))
