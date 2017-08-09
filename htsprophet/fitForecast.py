@@ -23,7 +23,6 @@ import numpy as np
 from fbprophet import Prophet
 import contextlib, os
 from scipy.special import inv_boxcox
-from scipy.stats import boxcox
 
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
@@ -84,6 +83,16 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
                 forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
             if boxcoxT is not None:
                 forecastsDict[node].yhat = inv_boxcox(forecastsDict[node].yhat, boxcoxT[node])
+                forecastsDict[node].trend = inv_boxcox(forecastsDict[node].trend, boxcoxT[node])
+                if "seasonal" in forecastsDict[node].columns.tolist():
+                    forecastsDict[node].seasonal = inv_boxcox(forecastsDict[node].seasonal, boxcoxT[node])
+                if "weekly" in forecastsDict[node].columns.tolist():
+                    forecastsDict[node].weekly = inv_boxcox(forecastsDict[node].weekly, boxcoxT[node])
+                if "yearly" in forecastsDict[node].columns.tolist():
+                    forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
+                if "holidays" in forecastsDict[node].columns.tolist():
+                    forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
+                
     ##
     # Now, Revise them
     ##
@@ -162,8 +171,6 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         ##
         if capF is not None:
             forecastsDict[key].yhat = np.log(forecastsDict[key].yhat)
-        if boxcoxT is not None:
-            forecastsDict[key].yhat, _ = boxcox(forecastsDict[key].yhat)
         
     return forecastsDict
     

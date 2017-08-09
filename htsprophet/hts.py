@@ -23,7 +23,6 @@ import sys
 from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
 from scipy.stats import boxcox
-from scipy.special import inv_boxcox
 
 #%%
 def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, include_history = True, cap = None, capF = None, changepoints = None, \
@@ -90,23 +89,6 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
     
     '''
     # Function Definitions
-    ##
-    # Box Cox Inverse Transform
-    ##
-    def boxcoxDict(data, lmbda = 0):
-        
-        for key in data.keys():
-            data[key].yhat = inv_boxcox(data[key].yhat, lmbda[key])
-            data[key].trend = inv_boxcox(data[key].trend, lmbda[key])
-            if "seasonal" in data[key].columns.tolist():
-                data[key].seasonal = inv_boxcox(data[key].seasonal, lmbda[key])
-            if "weekly" in data[key].columns.tolist():
-                data[key].weekly = inv_boxcox(data[key].weekly, lmbda[key])
-            if "yearly" in data[key].columns.tolist():
-                data[key].yearly = inv_boxcox(data[key].yearly, lmbda[key])
-            if "holidays" in data[key].columns.tolist():
-                data[key].yearly = inv_boxcox(data[key].yearly, lmbda[key])
-        return data
     ##
     #  "Creating the summing matrix" funciton
     ##
@@ -231,10 +213,6 @@ def hts(y, h = 1, nodes = [[2]], method='OC', freq = 'D', transform = None, incl
         ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
-    
-    if transform is not None:
-        if transform == "BoxCox":
-            ynew = boxcoxDict(ynew, boxcoxT)
     
     return ynew
 
