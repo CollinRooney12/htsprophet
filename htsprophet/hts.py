@@ -177,7 +177,7 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
         ##
         # Run all of the Methods and let 3 fold CV chose which is best for you
         ##
-        methodList = ['OLS','FP','PHA','AHP','BU']
+        methodList = ['WLSV','WLSS','OLS','FP','PHA','AHP','BU']
         sumMat = SummingMat(nodes)
         tscv = TimeSeriesSplit(n_splits=3)
         MASE1 = []
@@ -185,9 +185,16 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
         MASE3 = []
         MASE4 = []
         MASE5 = []
+        MASE6 = []
+        MASE7 = []
         ##
         # Split into train and test, using time series split, and predict the test set
         ##
+        y1 = y.copy()
+        if boxcoxT is not None:
+                for column in range(len(y.columns.tolist())-1):
+                    y1.iloc[:,column+1] = inv_boxcox(y1.iloc[:, column+1], boxcoxT[column])
+                    
         for trainIndex, testIndex in tscv.split(y.iloc[:,0]):
             ynew1 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[0], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
@@ -204,16 +211,25 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
             ynew5 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[4], freq, include_history, cap, capF, changepoints, n_changepoints, \
                                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                                 changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
+            ynew6 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[5], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
+            ynew7 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[6], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
+                    
             for key in ynew1.keys():
-                MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
-                MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
-                MASE3.append(abs(ynew3[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
-                MASE4.append(abs(ynew4[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
-                MASE5.append(abs(ynew5[key].yhat[-len(testIndex):].values - y.iloc[testIndex, key+1].values)/np.mean(abs(y.iloc[trainIndex[1:], key + 1].values - y.iloc[trainIndex[:-1], key + 1].values)))
+                MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE3.append(abs(ynew3[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE4.append(abs(ynew4[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE5.append(abs(ynew5[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE6.append(abs(ynew6[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE7.append(abs(ynew7[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
         ##
         # If the method has the minimum Average MASE, use it on all of the data
         ##
-        choices = [np.mean(MASE1), np.mean(MASE2), np.mean(MASE3), np.mean(MASE4), np.mean(MASE5)]
+        choices = [np.mean(MASE1), np.mean(MASE2), np.mean(MASE3), np.mean(MASE4), np.mean(MASE5), np.mean(MASE6), np.mean(MASE7)]
         choice = methodList[choices.index(min(choices))]
         ynew = fitForecast(y, h, sumMat, nodes, choice, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\

@@ -238,8 +238,8 @@ def optimalComb(forecastsDict, sumMat, method, mse):
     if method == "WLSS":
         diagMat = np.diag(np.transpose(np.sum(sumMat, axis = 1)))
         optiMat = np.dot(np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.dot(np.transpose(sumMat), np.linalg.inv(diagMat)), sumMat))), np.transpose(sumMat)), np.linalg.inv(diagMat))
-    if method == "WLSS":
-        diagMat = [np.repeat(mse[key], key) for key in mse.keys()]
+    if method == "WLSV":
+        diagMat = [mse[key] for key in mse.keys()]
         diagMat = np.diag(np.flip(np.hstack(diagMat)+0.0000001, 0))
         optiMat = np.dot(np.dot(np.dot(sumMat, np.linalg.inv(np.dot(np.dot(np.transpose(sumMat), np.linalg.inv(diagMat)), sumMat))), np.transpose(sumMat)), np.linalg.inv(diagMat))
         
