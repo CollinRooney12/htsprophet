@@ -3,19 +3,16 @@
 Name: fitForecast.py
 Author: Collin Rooney
 Last Updated: 7/18/2017
-
 This script will contain functions for all types of hierarchical modeling approaches.
 It will use the prophet package as a forecasting tool.
 The general idea of it is very similar to the hts package in R, but it is a little
 more specific with how the dataframe is put together.
-
 Credit to Rob J. Hyndman and research partners as much of the code was developed with the help of their work
 https://www.otexts.org/fpp
 https://robjhyndman.com/publications/
 Credit to Facebook and their fbprophet package
 https://facebookincubator.github.io/prophet/
 It was my intention to make some of the code look similar to certain sections in the Prophet and (Hyndman's) hts packages
-
 """
 
 import pandas as pd
@@ -96,11 +93,11 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
                     forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
                 if "holidays" in forecastsDict[node].columns.tolist():
                     forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
-                
     ##
     # Now, Revise them
     ##
     if method == 'BU' or method == 'AHP' or method == 'PHA':
+        y1 = y.copy()
         nCols = len(list(forecastsDict.keys()))+1
         if method == 'BU':
             '''
@@ -125,14 +122,17 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
              Cons:
                Unable to capture individual series dynamics
             '''
+            if boxcoxT is not None:
+                for column in range(len(y.columns.tolist())-1):
+                    y1.iloc[:,column+1] = inv_boxcox(y1.iloc[:, column+1], boxcoxT[column])
             ##
             # Find Proportions
             ##
             fcst = forecastsDict[0].yhat
             fcst = fcst[:, np.newaxis]
             numBTS = sumMat.shape[1]
-            btsDat = pd.DataFrame(y.iloc[:,nCols-numBTS:nCols])
-            divs = np.divide(np.transpose(np.array(btsDat)),np.array(y.iloc[:,1]))
+            btsDat = pd.DataFrame(y1.iloc[:,nCols-numBTS:nCols])
+            divs = np.divide(np.transpose(np.array(btsDat)),np.array(y1.iloc[:,1]))
             props = divs.mean(1)
             props = props[:, np.newaxis]
             hatMat = np.dot(np.array(fcst),np.transpose(props))
@@ -144,15 +144,18 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
              Cons:
                Unable to capture individual series dynamics
             '''
+            if boxcoxT is not None:
+                for column in range(len(y.columns.tolist())-1):
+                    y1.iloc[:,column+1] = inv_boxcox(y1.iloc[:, column+1], boxcoxT[column])
             ##
             # Find Proportions
             ##
             fcst = forecastsDict[0].yhat
             fcst = fcst[:, np.newaxis]
             numBTS = sumMat.shape[1]
-            btsDat = pd.DataFrame(y.iloc[:,nCols-numBTS:nCols])
+            btsDat = pd.DataFrame(y1.iloc[:,nCols-numBTS:nCols])
             btsSum = btsDat.sum(0)
-            topSum = sum(y.iloc[:,1])
+            topSum = sum(y1.iloc[:,1])
             props = btsSum/topSum
             props = props[:, np.newaxis]
             hatMat = np.dot(np.array(fcst),np.transpose(props))
