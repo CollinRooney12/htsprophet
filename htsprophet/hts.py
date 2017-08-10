@@ -3,19 +3,16 @@
 Name: hts.py
 Author: Collin Rooney
 Last Updated: 7/18/2017
-
 This script will contain functions for all types of hierarchical modeling approaches.
 It will use the prophet package as a forecasting tool.
 The general idea of it is very similar to the hts package in R, but it is a little
 more specific with how the dataframe is put together.
-
 Credit to Rob J. Hyndman and research partners as much of the code was developed with the help of their work
 https://www.otexts.org/fpp
 https://robjhyndman.com/publications/
 Credit to Facebook and their fbprophet package
 https://facebookincubator.github.io/prophet/
 It was my intention to make some of the code look similar to certain sections in the Prophet and (Hyndman's) hts packages
-
 """
 import pandas as pd
 import numpy as np
@@ -23,6 +20,7 @@ import sys
 from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
 from scipy.stats import boxcox
+from scipy.special import inv_boxcox
 
 
 #%%
@@ -227,6 +225,11 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
         ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT)
+        
+    if transform is not None:
+        if transform == 'BoxCox':
+            for column in range(len(y.columns.tolist())-1):
+                y.iloc[:,column+1] = inv_boxcox(y.iloc[:, column+1], boxcoxT[column])
     
     return ynew
 
