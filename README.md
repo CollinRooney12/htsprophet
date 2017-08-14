@@ -116,8 +116,8 @@ The following is the description of inputs and outputs for hts as well as the sp
      method – (String)  the type of hierarchical forecasting method that the user wants to use. 
                 Options:
                 "OLS" - optimal combination using ordinary least squares (Default), 
-		"WLSS" - optimal combination using structurally weighted least squares, 
-		"WLSV" - optimal combination using variance weighted least squares, 
+                "WLSS" - optimal combination using structurally weighted least squares, 
+                "WLSV" - optimal combination using variance weighted least squares, 
                 "FP" - forcasted proportions (top-down)
                 "PHA" - proportions of historical averages (top-down)
                 "AHP" - average historical proportions (top-down)
