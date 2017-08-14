@@ -30,7 +30,7 @@ def plotNode(dictframe, column, h = 1, xlabel = 'ds', ylabel = 'y', startFrom = 
     
     dictframe - (dict) The dictionary of dataframes that is the output of the hts function
     
-    column - (int) column number of the original input dataframe passed to the hts function (1 <-> number of cols)
+    column - (string) column title that you want to plot
     
     h - (int) number of steps in the forecast same as input to hts function
     
@@ -50,7 +50,7 @@ def plotNode(dictframe, column, h = 1, xlabel = 'ds', ylabel = 'y', startFrom = 
     plot of that node's forecast
     
     '''
-    nodeToPlot = dictframe[column-1]
+    nodeToPlot = dictframe[column]
     
     if ax is None:
         fig = plt.figure(facecolor='w', figsize=(10, 6))
@@ -197,7 +197,7 @@ def plotNodeComponents(dictframe, column, holidays = None, uncertainty=False, pl
     
     dictframe - (dict) The dictionary of dataframes that is the output of the hts function
     
-    column - (int) column number of the original input dataframe passed to the hts function (1 <-> number of cols)
+    column - (string) column title that you want to plot
     
     uncertainty - (Boolean) include the prediction intervals or not
     
@@ -213,7 +213,7 @@ def plotNodeComponents(dictframe, column, holidays = None, uncertainty=False, pl
     plot of that node's trend, seasonalities, holidays, etc.
     
     '''
-    nodeToPlot = dictframe[column - 1]
+    nodeToPlot = dictframe[column]
     colNames = nodeToPlot.columns.tolist()
     trend = "trend" in colNames
     if holidays is not None:
@@ -233,16 +233,14 @@ def plotNodeComponents(dictframe, column, holidays = None, uncertainty=False, pl
     return
 
 #%%
-def plotChild(dictframe, column, nodes, h = 1, xlabel = 'ds', ylabel = 'y', startFrom = 0, uncertainty = False, ax = None, legend = None):
+def plotChild(dictframe, column, h = 1, xlabel = 'ds', ylabel = 'y', startFrom = 0, uncertainty = False, ax = None):
     '''
     Parameters
     ------------------
     
     dictframe - (dict) The dictionary of dataframes that is the output of the hts function
     
-    column - (int) column number of the original input dataframe passed to the hts function (1 <-> number of cols)
-    
-    nodes - (list) the nodes list used as an input to the hts function
+    column - (string) column title that you want to plot
     
     h - (int) number of steps in the forecast same as input to hts function
     
@@ -256,10 +254,6 @@ def plotChild(dictframe, column, nodes, h = 1, xlabel = 'ds', ylabel = 'y', star
     
     ax - (axes object) any axes object thats already created that you want to pass to the plot function
     
-    legend - (list of strings) if specified, creates a legend for all the nodes
-                                legend[0] - parent node name
-                                legend[1] - first child node's name (as ordered in the original dataframe)
-    
     Returns
     ------------------
     
@@ -271,49 +265,36 @@ def plotChild(dictframe, column, nodes, h = 1, xlabel = 'ds', ylabel = 'y', star
     ##
     cmap = plt.get_cmap('tab10')
     ##
-    # Find the cumulative number of nodes at each level and add 1 to the beginning for the total node
+    # Find the children nodes
     ##
-    numAtLevel = np.cumsum(list(map(sum, nodes)))+1
-    numAtLevel = np.array([1] + list(numAtLevel))
-    ##
-    # If the column selected is greater than the number of columns in the dataframe
-    ##
-    if np.all(column > numAtLevel):
-        sys.exit("the column must beat most the number of columns in the original dataframe")
-    ##
-    # Find which level the specified node is at
-    ##
-    levels_with_more = [i for i in numAtLevel if i >= column]
-    level = sum([i for i,x in enumerate(numAtLevel) if x == levels_with_more[0]])
-    if level >= len(numAtLevel)-1:
+    colOptions = list(dictframe.keys())
+    allChildren = [s for s in colOptions if column in s]
+    countChildren = [s.count('_') for s in colOptions if column in s]
+    if min(countChildren)+1 not in countChildren and column != "Total":
         sys.exit("the specified column doesn't have children")
-    ##
-    # If not the total node, find the number of chidren from the nodes list, and the column numbers of those children by using num_at_level
-    ##
-    if column != 1:
-        numOfChild = nodes[level][column - numAtLevel[level-1] - 1]
-        firstChildColumn = numAtLevel[level] + sum(nodes[level][:column - numAtLevel[level-1] - 1])
+    if min(countChildren)+2 not in countChildren:
+        columnsToPlot = allChildren
     else:
-        numOfChild = sum(nodes[level])
-        firstChildColumn = 1
+        ind = countChildren.index(min(countChildren)+2)
+        columnsToPlot = allChildren[0:ind]
+    if column == 'Total':
+        allChildren = [s for s in colOptions]
+        countChildren = [s.count('_') for s in colOptions]
+        ind = countChildren.index(min(countChildren)+1)
+        columnsToPlot = allChildren[0:ind]
     ##
     # Plot the node and its children the same way as the plot_node function did it
     ##
-    for i in range(numOfChild+1):
-        N = numOfChild+1
-        if i == 0:
-            nodeToPlot = dictframe[column - 1]
-        else:
-            nodeToPlot = dictframe[firstChildColumn + i - 1]
+    i = 0
+    N = len(columnsToPlot)
+    for column in columnsToPlot:
+        nodeToPlot = dictframe[column]
         if ax is None:
             fig = plt.figure(facecolor='w', figsize=(10, 6))
             ax = fig.add_subplot(111)
         else:
             fig = ax.get_figure()
-        if legend is not None:
-            ax.plot(nodeToPlot['ds'].values[startFrom:-h], nodeToPlot['yhat'][startFrom:-h], ls='-', c = cmap(float(i)/N), label = legend[i])
-        else:
-            ax.plot(nodeToPlot['ds'].values[startFrom:-h], nodeToPlot['yhat'][startFrom:-h], ls='-', c = cmap(float(i)/N))
+        ax.plot(nodeToPlot['ds'].values[startFrom:-h], nodeToPlot['yhat'][startFrom:-h], ls='-', c = cmap(float(i)/N), label = column)
         ax.plot(nodeToPlot['ds'].values[-h:], nodeToPlot['yhat'][-h:], dashes = [2,1], c = cmap(float(i)/N), label = '_nolegend_')
         if 'cap' in nodeToPlot:
             ax.plot(nodeToPlot['ds'].values[startFrom:], nodeToPlot['cap'][startFrom:], ls='--', c='k')
@@ -321,6 +302,7 @@ def plotChild(dictframe, column, nodes, h = 1, xlabel = 'ds', ylabel = 'y', star
             ax.fill_between(nodeToPlot['ds'].values[startFrom:], nodeToPlot['yhat_lower'][startFrom:],
                             nodeToPlot['yhat_upper'][startFrom:], color='#0072B2',
                             alpha=0.2)
+        i+=1
     
     ax.grid(True, which='major', color='gray', ls='-', lw=1, alpha = 0.2)
     ax.set_xlabel(xlabel)

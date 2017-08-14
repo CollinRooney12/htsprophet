@@ -24,75 +24,89 @@ from scipy.special import inv_boxcox
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                 yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT):
+                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting):
    
     forecastsDict = {}
     mse = {}
     resids = {}
     nForecasts = sumMat.shape[0]
-    if method == 'FP':
-        nForecasts = sum(list(map(sum, nodes)))+1
-    
-    for node in range(nForecasts):
-        nodeToForecast = pd.concat([y.iloc[:, [0]], y.iloc[:, node+1]], axis = 1)
-        if isinstance(cap, pd.DataFrame):
-            cap1 = cap.iloc[:, node]
-        else:
-            cap1 = cap
-        if isinstance(capF, pd.DataFrame):    
-            cap2 = capF.iloc[:, node]
-        else:
-            cap2 = capF
-        if isinstance(changepoints, pd.DataFrame):
-            changepoints1 = changepoints[:, node]
-        else:
-            changepoints1 = changepoints
-        if isinstance(n_changepoints, list):
-            n_changepoints1 = n_changepoints[node]
-        else:
-            n_changepoints1 = n_changepoints
-        ##
-        # Put the forecasts into a dictionary of dataframes
-        ##
-        with contextlib.redirect_stdout(open(os.devnull, "w")):
-            # Prophet related stuff
-            nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[0] : 'ds'})
-            nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[1] : 'y'})
-            if capF is None:
-                growth = 'linear'
-                m = Prophet(growth, changepoints1, n_changepoints1, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
-                            holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+    ##
+    # If you have a ditionary of Prophet Dataframes already, skip the prophet part, and put all the values into a dictionary
+    ##
+    if skipFitting == True:
+        i = -2
+        for column in y:
+            i += 1
+            if i == -1:
+                continue
             else:
-                growth = 'logistic'
-                m = Prophet(growth, changepoints, n_changepoints, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
-                            holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
-                nodeToForecast['cap'] = cap1
-            m.fit(nodeToForecast)
-            future = m.make_future_dataframe(periods = h, freq = freq, include_history = include_history)
-            if capF is not None:
-                future['cap'] = cap2
+                forecastsDict[i] = y[column]
+            
+    if skipFitting == False:
+        
+        if method == 'FP':
+            nForecasts = sum(list(map(sum, nodes)))+1
+        
+        for node in range(nForecasts):
+            nodeToForecast = pd.concat([y.iloc[:, [0]], y.iloc[:, node+1]], axis = 1)
+            if isinstance(cap, pd.DataFrame):
+                cap1 = cap.iloc[:, node]
+            else:
+                cap1 = cap
+            if isinstance(capF, pd.DataFrame):    
+                cap2 = capF.iloc[:, node]
+            else:
+                cap2 = capF
+            if isinstance(changepoints, pd.DataFrame):
+                changepoints1 = changepoints[:, node]
+            else:
+                changepoints1 = changepoints
+            if isinstance(n_changepoints, list):
+                n_changepoints1 = n_changepoints[node]
+            else:
+                n_changepoints1 = n_changepoints
             ##
-            # Base Forecasts, Residuals, and MSE
+            # Put the forecasts into a dictionary of dataframes
             ##
-            forecastsDict[node] = m.predict(future)
-            resids[node] = y.iloc[:, node+1] - forecastsDict[node].yhat[:-h].values
-            mse[node] = np.mean(np.array(resids[node])**2)
-            ##
-            # If logistic use exponential function, so that values can be added correctly
-            ##
-            if capF is not None:
-                forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
-            if boxcoxT is not None:
-                forecastsDict[node].yhat = inv_boxcox(forecastsDict[node].yhat, boxcoxT[node])
-                forecastsDict[node].trend = inv_boxcox(forecastsDict[node].trend, boxcoxT[node])
-                if "seasonal" in forecastsDict[node].columns.tolist():
-                    forecastsDict[node].seasonal = inv_boxcox(forecastsDict[node].seasonal, boxcoxT[node])
-                if "weekly" in forecastsDict[node].columns.tolist():
-                    forecastsDict[node].weekly = inv_boxcox(forecastsDict[node].weekly, boxcoxT[node])
-                if "yearly" in forecastsDict[node].columns.tolist():
-                    forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
-                if "holidays" in forecastsDict[node].columns.tolist():
-                    forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
+            with contextlib.redirect_stdout(open(os.devnull, "w")):
+                # Prophet related stuff
+                nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[0] : 'ds'})
+                nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[1] : 'y'})
+                if capF is None:
+                    growth = 'linear'
+                    m = Prophet(growth, changepoints1, n_changepoints1, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
+                                holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                else:
+                    growth = 'logistic'
+                    m = Prophet(growth, changepoints, n_changepoints, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
+                                holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
+                    nodeToForecast['cap'] = cap1
+                m.fit(nodeToForecast)
+                future = m.make_future_dataframe(periods = h, freq = freq, include_history = include_history)
+                if capF is not None:
+                    future['cap'] = cap2
+                ##
+                # Base Forecasts, Residuals, and MSE
+                ##
+                forecastsDict[node] = m.predict(future)
+                resids[node] = y.iloc[:, node+1] - forecastsDict[node].yhat[:-h].values
+                mse[node] = np.mean(np.array(resids[node])**2)
+                ##
+                # If logistic use exponential function, so that values can be added correctly
+                ##
+                if capF is not None:
+                    forecastsDict[node].yhat = np.exp(forecastsDict[node].yhat)
+                if boxcoxT is not None:
+                    forecastsDict[node].yhat = inv_boxcox(forecastsDict[node].yhat, boxcoxT[node])
+                    forecastsDict[node].trend = inv_boxcox(forecastsDict[node].trend, boxcoxT[node])
+                    if "seasonal" in forecastsDict[node].columns.tolist():
+                        forecastsDict[node].seasonal = inv_boxcox(forecastsDict[node].seasonal, boxcoxT[node])
+                    if "weekly" in forecastsDict[node].columns.tolist():
+                        forecastsDict[node].weekly = inv_boxcox(forecastsDict[node].weekly, boxcoxT[node])
+                    if "yearly" in forecastsDict[node].columns.tolist():
+                        forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
+                    if "holidays" in forecastsDict[node].columns.tolist():
+                        forecastsDict[node].yearly = inv_boxcox(forecastsDict[node].yearly, boxcoxT[node])
     ##
     # Now, Revise them
     ##
@@ -167,6 +181,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
     if method == 'FP':
         newMat = forecastProp(forecastsDict, nodes)
     if method == 'OLS' or method == 'WLSS' or method == 'WLSV':
+        if capF is not None:
+            print("An error might occur because of how these methods are defined (They can produce negative values). If it does, then please use another method")
         newMat = optimalComb(forecastsDict, sumMat, method, mse)
     
     for key in forecastsDict.keys():
@@ -222,6 +238,7 @@ def forecastProp(forecastsDict, nodes):
 #%%    
 def optimalComb(forecastsDict, sumMat, method, mse):
 
+    if cap
     hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
     for key in forecastsDict.keys():
         f1 = np.array(forecastsDict[key].yhat)
