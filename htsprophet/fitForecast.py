@@ -238,7 +238,6 @@ def forecastProp(forecastsDict, nodes):
 #%%    
 def optimalComb(forecastsDict, sumMat, method, mse):
 
-    if cap
     hatMat = np.zeros([len(forecastsDict[0].yhat),1]) 
     for key in forecastsDict.keys():
         f1 = np.array(forecastsDict[key].yhat)
