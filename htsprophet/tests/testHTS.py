@@ -26,14 +26,14 @@ class testHTSOut(unittest.TestCase):
         # Check Make Weekly
         ##
         self.assertIsNotNone(data1)
-        self.assertEqual(len(data2.iloc[:,0]), len(data2.iloc[:,0].unique()))
         self.assertLessEqual(len(data1.iloc[:,0]), len(data.iloc[:,0]))
         ##
         # Check OrderHier
         ##
         self.assertIsNotNone(data2)
         self.assertIsNotNone(nodes)
-        self.assertLessEqual(len(data2.iloc[:,0]), len(data2.iloc[:,0]))
+        self.assertLessEqual(len(data2.iloc[:,0]), len(data1.iloc[:,0]))
+        self.assertEqual(len(data2.iloc[:,0]), len(data2.iloc[:,0].unique()))
         ##
         # Test if bottom up is working correctly
         ##
@@ -216,6 +216,23 @@ class testHTSOut(unittest.TestCase):
         self.assertAlmostEqual(myDict['Air'].yhat[-52:].all(), (myDict['Air_Stone Tablet'].yhat[-52:] + myDict['Air_Car Phone'].yhat[-52:]).all())
         self.assertAlmostEqual(myDict['Land'].yhat[-52:].all(), (myDict['Land_Stone Tablet'].yhat[-52:] + myDict['Land_Car Phone'].yhat[-52:]).all())
         self.assertAlmostEqual(myDict['Sea'].yhat[-52:].all(), (myDict['Sea_Stone Tablet'].yhat[-52:] + myDict['Sea_Car Phone'].yhat[-52:]).all())
+        ##
+        # Testing for system exit
+        ##
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, nodes, freq = 'W', method = "Yellow", cap = 11, capF = 13)
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 0, nodes, freq = 'W', method = "FP", cap = 11, capF = 13)
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, [[72],[8]], freq = 'W', method = "FP", cap = 11, capF = 13)
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, nodes, freq = 'W', method = "FP", cap = 'mycap', capF = 13)
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, nodes, freq = 'W', method = "FP", cap = 11, capF = 'mycap')
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, nodes, freq = 'W', method = "FP", cap = pd.DataFrame(nodes), capF = 13)
+        with self.assertRaises(SystemExit):
+            myDict = hts(data2, 52, nodes, freq = 'W', method = "FP", cap = 11, capF = pd.DataFrame(nodes))
         
 if __name__ == '__main__':
     unittest.main()
