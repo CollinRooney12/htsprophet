@@ -127,6 +127,8 @@ The following is the description of inputs and outputs for hts as well as the sp
      freq - (Time Frequency) input for the forecasting function of Prophet 
      
      include_history - (Boolean) input for the forecasting function of Prophet
+     
+     transform - (None or "BoxCox") Do you want to transform your data before fitting the prophet function? If yes, type "BoxCox"
                 
      cap - (Dataframe or Constant) carrying capacity of the input time series.  If it is a dataframe, then
                                    the number of columns must equal len(y.columns) - 1
@@ -139,7 +141,10 @@ The following is the description of inputs and outputs for hts as well as the sp
      
      n_changepoints - (constant or list) changepoints for the model to consider fitting. If it is a list, then
                                          the number of items must equal len(y.columns) - 1
-                                         
+     skipFitting - (Boolean) if y is already a dictionary of dataframes, set this to True, and DO NOT run with method = "cvSelect" or transform = "BoxCox"
+     
+     numThreads - (int) number of threads you want to use when running cvSelect. Note: 14 has shown to decrease runtime by 10 percent 
+     
      All other inputs - see Prophet
      
     Returns
@@ -153,6 +158,4 @@ All other functions should be self-explanatory.
 
 # Part III: Room For Improvement
 
-The package could benefit from the following two things:
-1. A way to run some of it in parallel, cause it take a while sometimes.
-2. Prediction intervals would be cool as well.
+1. Prediction intervals
