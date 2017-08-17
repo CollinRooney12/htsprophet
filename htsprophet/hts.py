@@ -21,16 +21,17 @@ from sklearn.model_selection import TimeSeriesSplit
 from htsprophet.fitForecast import fitForecast
 from scipy.stats import boxcox
 from scipy.special import inv_boxcox
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 #%%
 def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, include_history = True, cap = None, capF = None, changepoints = None, \
         n_changepoints = 25, yearly_seasonality = 'auto', weekly_seasonality = 'auto', holidays = None, seasonality_prior_scale = 10.0, \
-        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0, skipFitting = False):
+        holidays_prior_scale = 10.0, changepoint_prior_scale = 0.05, mcmc_samples = 0, interval_width = 0.80, uncertainty_samples = 0, skipFitting = False, numThreads = 0):
     '''
     Parameters
     ----------------
-     y - dataframe of time-series data
+     y - dataframe of time-series data, or if you want to skip fitting, a dictionary of prophet base forecast dataframes
                Layout:
                    0th Col - Time instances
                    1st Col - Total of TS
@@ -82,6 +83,11 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
      n_changepoints - (constant or list) changepoints for the model to consider fitting. If it is a list, then
                                          the number of items must equal len(y.columns) - 1
                                          
+     skipFitting - (Boolean) if y is already a dictionary of dataframes, set this to True, and DO NOT run with method = "cvSelect" or transform = "BoxCox"
+     
+     numThreads - (int) number of threads you want to use when running cvSelect. Note: 14 has shown to decrease runtime by 10 percent 
+
+                                    
      All other inputs - see Prophet
      
     Returns
@@ -149,6 +155,8 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
     if isinstance(capF, pd.DataFrame):
         if len(capF.columns) != len(y.columns)-1:
             sys.exit("If capF is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
+    if cap is not None and method not in ["BU","FP","AHP","PHA"]:
+        print("Consider using BU, FP, AHP, or PHA.  The other methods can create negatives which would cause problems for the log() function")
     ##
     # Transform Variables
     ##
@@ -168,6 +176,8 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
                 for column in range(len(y.columns.tolist())-1):
                     y.iloc[:,column+1] = boxcox(y.iloc[:, column+1], lmbda = 0)
                     boxcoxT[column] = 0
+        else:
+            print("Nothing will be transformed because the input was not = to 'BoxCox'")
     else:
         boxcoxT = None
     ##
@@ -196,28 +206,37 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
                     y1.iloc[:,column+1] = inv_boxcox(y1.iloc[:, column+1], boxcoxT[column])
                     
         for trainIndex, testIndex in tscv.split(y.iloc[:,0]):
-            ynew1 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[0], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew2 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[1], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew3 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[2], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew4 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[3], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew5 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[4], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew6 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[5], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-            ynew7 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[6], freq, include_history, cap, capF, changepoints, n_changepoints, \
-                                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-                    
+            if numThreads != 0:
+                pool = ThreadPool(numThreads)
+                results = pool.starmap(fitForecast, zip([y.iloc[trainIndex, :]]*7, [len(testIndex)]*7, [sumMat]*7, [nodes]*7, methodList, [freq]*7, [include_history]*7, [cap]*7, [capF]*7, [changepoints]*7, [n_changepoints]*7, \
+                                    [yearly_seasonality]*7, [weekly_seasonality]*7, [holidays]*7, [seasonality_prior_scale]*7, [holidays_prior_scale]*7,\
+                                    [changepoint_prior_scale]*7, [mcmc_samples]*7, [interval_width]*7, [uncertainty_samples]*7,  [boxcoxT]*7, [skipFitting]*7))
+                pool.close()
+                pool.join()
+                ynew1, ynew2, ynew3, ynew4, ynew5, ynew6, ynew7 = results
+            else:
+                ynew1 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[0], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew2 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[1], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew3 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[2], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew4 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[3], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew5 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[4], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew6 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[5], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+                ynew7 = fitForecast(y.iloc[trainIndex, :], len(testIndex), sumMat, nodes, methodList[6], freq, include_history, cap, capF, changepoints, n_changepoints, \
+                                    yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
+                                    changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
+#                    
             for key in ynew1.keys():
                 MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
                 MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))

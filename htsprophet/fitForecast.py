@@ -35,12 +35,12 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
     ##
     if skipFitting == True:
         i = -2
-        for column in y:
+        for key in y.keys():
             i += 1
             if i == -1:
                 continue
             else:
-                forecastsDict[i] = y[column]
+                forecastsDict[i] = y[key]
             
     if skipFitting == False:
         
