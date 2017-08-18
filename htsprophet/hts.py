@@ -86,8 +86,7 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
      skipFitting - (Boolean) if y is already a dictionary of dataframes, set this to True, and DO NOT run with method = "cvSelect" or transform = "BoxCox"
      
      numThreads - (int) number of threads you want to use when running cvSelect. Note: 14 has shown to decrease runtime by 10 percent 
-
-                                    
+                                 
      All other inputs - see Prophet
      
     Returns
@@ -238,13 +237,13 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
                                     changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
 #                    
             for key in ynew1.keys():
-                MASE1.append(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE2.append(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE3.append(abs(ynew3[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE4.append(abs(ynew4[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE5.append(abs(ynew5[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE6.append(abs(ynew6[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE7.append(abs(ynew7[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE1.append(sum(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE2.append(sum(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE3.append(sum(abs(ynew3[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE4.append(sum(abs(ynew4[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE5.append(sum(abs(ynew5[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE6.append(sum(abs(ynew6[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE7.append(sum(abs(ynew7[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
         ##
         # If the method has the minimum Average MASE, use it on all of the data
         ##
