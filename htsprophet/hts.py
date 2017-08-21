@@ -135,25 +135,26 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
         return finalMat
     ##
     # Error Handling
-    ##
+    ##        
     if h < 1:
         sys.exit('you must set h (number of step-ahead forecasts) to a positive number')
     if method not in ['OLS','WLSS','WLSV','FP','PHA','AHP','BU','cvSelect']:
         sys.exit("not a valid method input, must be one of the following: 'OLS','WLSS','WLSV','FP','PHA','AHP','BU','cvSelect'")
     if len(nodes) < 1:
         sys.exit("nodes input should at least be of length 1")
-    if sum(list(map(sum, nodes))) != len(y.columns)-2:
-        sys.exit("The sum of the nodes list does not equal the number of columns - 2, dataframe should contain a time column in the 0th pos. Double check node input")
     if not isinstance(cap, int) and not isinstance(cap, pd.DataFrame) and not isinstance(cap, float) and not cap is None:
         sys.exit("cap should be a constant (float or int) or a DataFrame, or not specified")
     if not isinstance(capF, int) and not isinstance(capF, pd.DataFrame) and not isinstance(capF, float) and not capF is None:
         sys.exit("capF should be a constant (float or int) or a DataFrame, or not specified")
-    if isinstance(cap, pd.DataFrame):
-        if len(cap.columns) != len(y.columns)-1:
-            sys.exit("If cap is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
-    if isinstance(capF, pd.DataFrame):
-        if len(capF.columns) != len(y.columns)-1:
-            sys.exit("If capF is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
+    if not isinstance(y, dict):
+        if sum(list(map(sum, nodes))) != len(y.columns)-2:
+            sys.exit("The sum of the nodes list does not equal the number of columns - 2, dataframe should contain a time column in the 0th pos. Double check node input")
+        if isinstance(cap, pd.DataFrame):
+            if len(cap.columns) != len(y.columns)-1:
+                sys.exit("If cap is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
+        if isinstance(capF, pd.DataFrame):
+            if len(capF.columns) != len(y.columns)-1:
+                sys.exit("If capF is a DataFrame, it should have a number of columns equal to the input Dataframe - 1")
     if cap is not None and method not in ["BU","FP","AHP","PHA"]:
         print("Consider using BU, FP, AHP, or PHA.  The other methods can create negatives which would cause problems for the log() function")
     ##
@@ -237,13 +238,13 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
                                     changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
 #                    
             for key in ynew1.keys():
-                MASE1.append(sum(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE2.append(sum(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE3.append(sum(abs(ynew3[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE4.append(sum(abs(ynew4[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE5.append(sum(abs(ynew5[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE6.append(sum(abs(ynew6[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
-                MASE7.append(sum(abs(ynew7[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values))/np.mean(abs(y1.iloc[trainIndex[1:], key + 1].values - y1.iloc[trainIndex[:-1], key + 1].values)))
+                MASE1.append(np.mean(abs(ynew1[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE2.append(np.mean(abs(ynew2[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE3.append(np.mean(abs(ynew3[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE4.append(np.mean(abs(ynew4[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE5.append(np.mean(abs(ynew5[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE6.append(np.mean(abs(ynew6[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
+                MASE7.append(np.mean(abs(ynew7[key].yhat[-len(testIndex):].values - y1.iloc[testIndex, key+1].values)))
         ##
         # If the method has the minimum Average MASE, use it on all of the data
         ##
@@ -255,15 +256,34 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
         print(choice)
     
     else:    
+        if skipFitting == True:
+            theDictionary = y
+            i = 0
+            for key in y.keys():
+                if i == 0:
+                    y = pd.DataFrame(theDictionary[key].ds)
+                y[i] = theDictionary[key].yhat
+                i += 1
         sumMat = SummingMat(nodes)
         ynew = fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
                            yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
                            changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting)
-        
+    ##
+    # Inverse boxcox the data
+    ##    
     if transform is not None:
         if transform == 'BoxCox':
             for column in range(len(y.columns.tolist())-1):
                 y.iloc[:,column+1] = inv_boxcox(y.iloc[:, column+1], boxcoxT[column])
+    ##
+    # Put the values back in the dictionary for skipFitting
+    ##
+    if skipFitting == True:
+        i = 0
+        for key in theDictionary.keys():
+            theDictionary[key].yhat = ynew[i].yhat
+            i += 1
+            ynew = theDictionary
     ##
     # Rename keys so that dictionary can be easily understood
     ##

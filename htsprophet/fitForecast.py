@@ -34,13 +34,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
     # If you have a ditionary of Prophet Dataframes already, skip the prophet part, and put all the values into a dictionary
     ##
     if skipFitting == True:
-        i = -2
-        for key in y.keys():
-            i += 1
-            if i == -1:
-                continue
-            else:
-                forecastsDict[i] = y[key]
+        for key in range(len(y.columns.tolist())-1):
+            forecastsDict[key] = pd.DataFrame(y.iloc[:,key+1], columns = ["yhat"])
             
     if skipFitting == False:
         
