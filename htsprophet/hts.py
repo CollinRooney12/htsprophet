@@ -162,12 +162,14 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
     ##
     if transform is not None:
         if transform == 'BoxCox':
+            y2 = y.copy()
             import warnings
             warnings.simplefilter("error", RuntimeWarning)
             boxcoxT = [None]*(len(y.columns.tolist())-1)
             try:
                 for column in range(len(y.columns.tolist())-1):
-                    y.iloc[:,column+1], boxcoxT[column] = boxcox(y.iloc[:, column+1])
+                    y2.iloc[:,column+1], boxcoxT[column] = boxcox(y2.iloc[:, column+1])
+                y = y2
             ##
             # Does a Natural Log Transform if scipy's boxcox cant deal
             ##
@@ -281,12 +283,14 @@ def hts(y, h = 1, nodes = [[2]], method='OLS', freq = 'D', transform = None, inc
     if skipFitting == True:
         i = 0
         for key in theDictionary.keys():
-            theDictionary[key].yhat = ynew[i].yhat
-            i += 1
-            ynew = theDictionary
+            for column in theDictionary[key].columns:
+                if column == 'yhat':
+                    continue
+                ynew[key][column] = theDictionary[key][column]
     ##
     # Rename keys so that dictionary can be easily understood
     ##
+
     i = -2
     for column in y:
         i += 1   
