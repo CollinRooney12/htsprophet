@@ -280,8 +280,11 @@ def plotChild(dictframe, column, h = 1, xlabel = 'ds', ylabel = 'y', startFrom =
     if column == 'Total':
         allChildren = [s for s in colOptions]
         countChildren = [s.count('_') for s in colOptions]
-        ind = countChildren.index(min(countChildren)+1)
-        columnsToPlot = allChildren[0:ind]
+        if max(countChildren) > 0:
+            ind = countChildren.index(min(countChildren)+1)
+            columnsToPlot = allChildren[0:ind]
+        else:
+            columnsToPlot = allChildren
     ##
     # Plot the node and its children the same way as the plot_node function did it
     ##
