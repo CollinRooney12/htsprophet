@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name = 'htsprophet',
-      version = '0.0.31',
+      version = '0.1.0',
       description = "Creates Hierarchical Time Series Forecasts with Facebook's Prophet tool",
       url = "https://github.com/CollinRooney12/htsprophet",
       author = "Collin Rooney",
