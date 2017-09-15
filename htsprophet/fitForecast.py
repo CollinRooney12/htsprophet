@@ -35,7 +35,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
     ##
     if skipFitting == True:
         for key in range(len(y.columns.tolist())-1):
-            forecastsDict[key] = pd.DataFrame(y.iloc[:,key+1], columns = ["yhat"])
+            forecastsDict[key] = pd.DataFrame(y.iloc[:,key+1])
+            forecastsDict[key] = forecastsDict[key].rename(columns = {forecastsDict[key].columns[0] : 'yhat'})
             
     if skipFitting == False:
         
@@ -172,7 +173,7 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
         newMat = np.empty([hatMat.shape[0],sumMat.shape[0]])
         for i in range(hatMat.shape[0]):
             newMat[i,:] = np.dot(sumMat, np.transpose(hatMat[i,:]))
-
+            
     if method == 'FP':
         newMat = forecastProp(forecastsDict, nodes)
     if method == 'OLS' or method == 'WLSS' or method == 'WLSV':
