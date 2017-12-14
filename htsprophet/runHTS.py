@@ -67,6 +67,6 @@ myDict = hts(data2, 52, nodes, holidays = holidays, method = "FP", transform = "
 # This output is a dictionary of dataframes, so you can do any further analysis that you may want. It also allows you to plot the forecasts.
 # Some functions I've made are: (1 means I'm plotting the total node)
 ##
-plotNode(myDict, 1, h = 52, xlabel = "Week", ylabel = "Number of Sessions")
-plotChild(myDict, 1, nodes, h = 52, xlabel = "Week", ylabel = "Number of Sessions", legend = ["Total","Air","Land","Sea"])
-plotNodeComponents(myDict, column = 1, holidays = holidays)
+plotNode(myDict, "Total", h = 52, xlabel = "Week", ylabel = "Number of Sessions")
+plotChild(myDict, "Total", h = 52, xlabel = "Week", ylabel = "Number of Sessions")
+plotNodeComponents(myDict, column = "Total", holidays = holidays)

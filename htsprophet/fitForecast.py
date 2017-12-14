@@ -23,8 +23,9 @@ from scipy.special import inv_boxcox
 
 #%%
 def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, changepoints, n_changepoints, \
-                yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, holidays_prior_scale,\
-                changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, boxcoxT, skipFitting):
+                yearly_seasonality, weekly_seasonality, daily_seasonality, holidays, seasonality_prior_scale, \
+                holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples, \
+                boxcoxT, skipFitting):
    
     forecastsDict = {}
     mse = {}
@@ -70,11 +71,11 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
                 nodeToForecast = nodeToForecast.rename(columns = {nodeToForecast.columns[1] : 'y'})
                 if capF is None:
                     growth = 'linear'
-                    m = Prophet(growth, changepoints1, n_changepoints1, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
+                    m = Prophet(growth, changepoints1, n_changepoints1, yearly_seasonality, weekly_seasonality, daily_seasonality, holidays, seasonality_prior_scale, \
                                 holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
                 else:
                     growth = 'logistic'
-                    m = Prophet(growth, changepoints, n_changepoints, yearly_seasonality, weekly_seasonality, holidays, seasonality_prior_scale, \
+                    m = Prophet(growth, changepoints, n_changepoints, yearly_seasonality, weekly_seasonality, daily_seasonality, holidays, seasonality_prior_scale, \
                                 holidays_prior_scale, changepoint_prior_scale, mcmc_samples, interval_width, uncertainty_samples)
                     nodeToForecast['cap'] = cap1
                 m.fit(nodeToForecast)
@@ -97,6 +98,8 @@ def fitForecast(y, h, sumMat, nodes, method, freq, include_history, cap, capF, c
                     forecastsDict[node].trend = inv_boxcox(forecastsDict[node].trend, boxcoxT[node])
                     if "seasonal" in forecastsDict[node].columns.tolist():
                         forecastsDict[node].seasonal = inv_boxcox(forecastsDict[node].seasonal, boxcoxT[node])
+                    if "daily" in forecastsDict[node].columns.tolist():
+                        forecastsDict[node].daily = inv_boxcox(forecastsDict[node].daily, boxcoxT[node])
                     if "weekly" in forecastsDict[node].columns.tolist():
                         forecastsDict[node].weekly = inv_boxcox(forecastsDict[node].weekly, boxcoxT[node])
                     if "yearly" in forecastsDict[node].columns.tolist():
