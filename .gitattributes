@@ -1,2 +1,2 @@
 # Use CRLF line endings as default
-* text eol=crlf
+*.py text eol=crlf
