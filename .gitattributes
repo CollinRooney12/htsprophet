@@ -1,0 +1,2 @@
+# Use CRLF line endings as default
+*.py text eol=crlf
